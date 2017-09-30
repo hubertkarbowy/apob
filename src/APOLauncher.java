@@ -1,4 +1,3 @@
-
 public class APOLauncher {
 
 	public static void main (String[] args) {
