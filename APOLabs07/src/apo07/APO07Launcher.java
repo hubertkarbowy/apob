@@ -4,6 +4,7 @@ class APO07Launcher {
 	
 	public static void main (String[] args) {
 		System.out.println("Hello Mr Doros.");
+		new MainScreen().setVisible(true);
 	}
 
 }
