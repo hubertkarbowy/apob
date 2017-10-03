@@ -1,5 +1,6 @@
 package apo07;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 
@@ -22,8 +23,12 @@ public class PicturePanel extends JPanel {
 	}
 	
 	public void setInternalImage(Image internalImage) {
+		Dimension internalImageDimension = new Dimension(internalImage.getWidth(null), internalImage.getHeight(null));
 		this.internalImage = internalImage;
 		this.getGraphics().drawImage(this.internalImage, 0, 0, this);
+		this.setSize(internalImage.getWidth(null), internalImage.getWidth(null));
+		this.setPreferredSize(internalImageDimension);
+		this.setMaximumSize(internalImageDimension);
 	}
 	
 }

@@ -5,12 +5,14 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.function.Consumer;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -31,15 +33,21 @@ public class MainScreen extends JFrame {
 	private PicturePanel panelFirstInputPic;
 	private PicturePanel panelSecondInputPic;
 	private PicturePanel panelOutputPic;
-	private JLabel lblDrugiObrazWejcioqwy;
-	private JLabel lblObrazWyjciowy;
 	private JMenuItem mnOpenPic1;
 	private JMenuItem mnOpenPic2;
 	
 	private ImageIcon firstInputPic;
 	private ImageIcon secondInputPic;
+	private ImageIcon outputPic;
 	private JScrollPane panelFirstInputScrollPane;
 	private JScrollPane panelSecondInputScrollPane;
+	private JScrollPane panelOutputScrollPane;
+	
+	private JPanel toolsPanel;
+	private JButton histButton;
+	private JLabel lblNarzdzia;
+	
+	private Consumer<ActionEvent> aaa;
 
 	
 
@@ -47,14 +55,17 @@ public class MainScreen extends JFrame {
 	 * One bloated ugly constructor
 	 */
 	public MainScreen() {
+		setPreferredSize(new Dimension(900, 600));
 		setTitle("Algorytmy Przetwarzania Obrazów 07");
-		setMinimumSize(new Dimension(500, 500));
+		setMinimumSize(new Dimension(900, 600));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// setBounds(100, 100, 591, 322);
 		JPanel MainScreenMainPanel = new JPanel();
+		MainScreenMainPanel.setPreferredSize(new Dimension(900, 600));
 		MainScreenMainPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(MainScreenMainPanel);
 		MainScreenMainPanel.setLayout(new BoxLayout(MainScreenMainPanel, BoxLayout.Y_AXIS));
+		MainScreenMainPanel.setAlignmentX(LEFT_ALIGNMENT);
 		
 		menuBar = new JMenuBar();
 		menuBar.setMaximumSize(new Dimension(500, 30));
@@ -70,24 +81,20 @@ public class MainScreen extends JFrame {
 		
 		mnOpenPic1 = new JMenuItem("Otwórz obraz 1");
 		mnOpenPic1.addActionListener((ActionEvent event) -> {
-			JFileChooser fileChooser = new JFileChooser();
-			int openStatus = fileChooser.showOpenDialog(null);
-			if (openStatus == JFileChooser.APPROVE_OPTION) {
-	            File file = fileChooser.getSelectedFile();
-	            System.out.println("Otwieranie pliku" + file.toString());
-	            firstInputPic = new ImageIcon(file.toString());
-	            Image firstInputPicImg = firstInputPic.getImage();
-	            panelFirstInputPic.setInternalImage(firstInputPicImg);
-	        } else {
-	            // kliknieto cancel
-	        }
+			loadPicIntoPanel(panelFirstInputPic);
         });
+		
 		
 		mnOpenPic1.setMnemonic('1');
 		mnPlik.add(mnOpenPic1);
 		
 		mnOpenPic2 = new JMenuItem("Otwórz obraz 2");
 		mnOpenPic2.setMnemonic('2');
+		mnOpenPic2.addActionListener((ActionEvent event) -> {
+			loadPicIntoPanel(panelSecondInputPic);
+        });
+		
+		
 		mnPlik.add(mnOpenPic2);
 		mnPlik.add(mnExit);
 		
@@ -99,31 +106,66 @@ public class MainScreen extends JFrame {
 		setJMenuBar(menuBar);
 		
 		panelFirstInputPic = new PicturePanel(null);
-		panelFirstInputPic.setPreferredSize(new Dimension(100, 3260));
+		panelFirstInputPic.setMaximumSize(new Dimension(100, 100));
+		panelFirstInputPic.setPreferredSize(new Dimension(100, 100));
 		panelFirstInputPic.setMinimumSize(new Dimension(100, 100));
 		
 		panelSecondInputPic = new PicturePanel(null);
-		panelSecondInputPic.setPreferredSize(new Dimension(100, 3260));
+		panelSecondInputPic.setPreferredSize(new Dimension(100, 100));
 		panelSecondInputPic.setMinimumSize(new Dimension(100, 10));
 		
 		panelOutputPic = new PicturePanel(null);
-		panelOutputPic.setMinimumSize(new Dimension(100, 10));
+		panelOutputPic.setPreferredSize(new Dimension(400, 10));
+		panelOutputPic.setMinimumSize(new Dimension(400, 10));
 		
 		panelFirstInputScrollPane = new JScrollPane(panelFirstInputPic);
-		panelFirstInputScrollPane.setMinimumSize(new Dimension(22, 100));
+		panelFirstInputScrollPane.setPreferredSize(new Dimension(400, 300));
+		panelFirstInputScrollPane.setMinimumSize(new Dimension(400, 250));
 		panelSecondInputScrollPane = new JScrollPane(panelSecondInputPic);
+		panelSecondInputScrollPane.setPreferredSize(new Dimension(103, 200));
 		panelSecondInputScrollPane.setMinimumSize(new Dimension(22, 100));
+		panelOutputScrollPane = new JScrollPane(panelOutputPic);
+		panelOutputScrollPane.setPreferredSize(new Dimension(103, 300));
+		panelOutputScrollPane.setMinimumSize(new Dimension(103, 300));
 		
 		panelInputPics = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelFirstInputScrollPane, panelSecondInputScrollPane);
+		panelInputPics.setMinimumSize(new Dimension(400, 212));
+		panelInputPics.setPreferredSize(new Dimension(400, 615));
 		
-		lblDrugiObrazWejcioqwy = new JLabel("drugi obraz wejściowy");
-		panelSecondInputPic.add(lblDrugiObrazWejcioqwy);
+		allPicsPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelInputPics, panelOutputScrollPane);
+		allPicsPanel.setMinimumSize(new Dimension(900, 302));
+		allPicsPanel.setPreferredSize(new Dimension(900, 617));
 		
-		allPicsPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelInputPics, panelOutputPic);
+		// TOOLS PANEL
 		
-		lblObrazWyjciowy = new JLabel("obraz wyjściowy");
-		panelOutputPic.add(lblObrazWyjciowy);
+		toolsPanel = new JPanel();
+		toolsPanel.setPreferredSize(new Dimension(10, 40));
+		toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
+		
+		lblNarzdzia = new JLabel("Narzędzia:");
+		toolsPanel.add(lblNarzdzia);
+		
+		
+		histButton = new JButton("Hist");
+		toolsPanel.add(histButton);
+		
+		
+		MainScreenMainPanel.add(toolsPanel);
+		toolsPanel.setAlignmentX(LEFT_ALIGNMENT);
 		MainScreenMainPanel.add(allPicsPanel);
 	}
-
+	
+	private void loadPicIntoPanel(PicturePanel whichPanel) {
+		JFileChooser fileChooser = new JFileChooser();
+		int openStatus = fileChooser.showOpenDialog(null);
+		if (openStatus == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            System.out.println("Otwieranie pliku" + file.toString());
+            firstInputPic = new ImageIcon(file.toString());
+            Image firstInputPicImg = firstInputPic.getImage();
+            whichPanel.setInternalImage(firstInputPicImg);
+        } else {
+            // cancel clicked
+        }
+	}
 }
