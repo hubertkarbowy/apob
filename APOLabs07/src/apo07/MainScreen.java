@@ -23,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.event.MenuKeyListener;
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.JScrollPane;
+import java.awt.event.ActionListener;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -147,6 +148,11 @@ public class MainScreen extends JFrame {
 		
 		
 		histButton = new JButton("Hist");
+		histButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new HistWindow().setVisible(true);
+			}
+		});
 		toolsPanel.add(histButton);
 		
 		
