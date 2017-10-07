@@ -2,6 +2,7 @@ package apo07;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.function.Consumer;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -24,6 +26,7 @@ import javax.swing.event.MenuKeyListener;
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -150,7 +153,12 @@ public class MainScreen extends JFrame {
 		histButton = new JButton("Hist");
 		histButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new HistWindow().setVisible(true);
+				Graphics abc = panelFirstInputPic.getGraphics();
+				Image firstInputPicImg = firstInputPic.getImage();
+	            BufferedImage b = new BufferedImage (firstInputPicImg.getWidth(null), firstInputPicImg.getHeight(null), BufferedImage.TYPE_BYTE_GRAY);
+	            b.getGraphics().drawImage(firstInputPicImg, 0,0,null);
+				new HistWindow(b).setVisible(true);
+				
 			}
 		});
 		toolsPanel.add(histButton);
