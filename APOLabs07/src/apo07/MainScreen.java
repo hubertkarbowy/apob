@@ -153,11 +153,26 @@ public class MainScreen extends JFrame {
 		histButton = new JButton("Hist");
 		histButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Graphics abc = panelFirstInputPic.getGraphics();
-				Image firstInputPicImg = firstInputPic.getImage();
-	            BufferedImage b = new BufferedImage (firstInputPicImg.getWidth(null), firstInputPicImg.getHeight(null), BufferedImage.TYPE_BYTE_GRAY);
-	            b.getGraphics().drawImage(firstInputPicImg, 0,0,null);
-				new HistWindow(b).setVisible(true);
+				Image firstInputPicImg = null;
+				Image secondInputPicImg = null;
+				BufferedImage b = null;
+				BufferedImage b2 = null;
+				try { 
+					firstInputPicImg = firstInputPic.getImage();
+					secondInputPicImg = secondInputPic.getImage();
+					}
+				catch (Exception ex) {}
+				
+	           try {
+				b = new BufferedImage (firstInputPicImg.getWidth(null), firstInputPicImg.getHeight(null), BufferedImage.TYPE_BYTE_GRAY);
+				b.getGraphics().drawImage(firstInputPicImg, 0,0,null);
+				
+	            b2 = new BufferedImage (secondInputPicImg.getWidth(null), secondInputPicImg.getHeight(null), BufferedImage.TYPE_BYTE_GRAY);
+	            b2.getGraphics().drawImage(secondInputPicImg, 0,0,null);
+	           }
+	           catch (Exception ex) {}
+
+	           new HistWindow(b, b2).setVisible(true);
 				
 			}
 		});

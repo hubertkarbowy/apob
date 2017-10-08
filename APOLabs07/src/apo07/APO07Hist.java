@@ -4,8 +4,13 @@ import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.*;
 import java.awt.image.*;
+import java.util.Arrays;
 
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import sun.java2d.loops.FillParallelogram;
 
@@ -22,7 +27,12 @@ public class APO07Hist extends JPanel {
     int offsetY=0;
     int[] lut = new int[256]; // lookup table
     String histTitle = "Ta klasa rozszerza JPanel.\nTu bedzie rysowany histogram.";
-   
+    static class HistogramPaintException extends RuntimeException { // just in case sth is f*ckd up inside the overriden paint method
+    	public HistogramPaintException(String msg) {
+    		super(msg);
+    	}
+    }
+    
     // CONSTRUCTORS
     
     public APO07Hist ()
@@ -94,15 +104,19 @@ public class APO07Hist extends JPanel {
          }
          else
          {
-        	 for (int x=0; x<pierwszy.getWidth(); x++) {			// compute lookup table
-        		 for (int y=0; y<pierwszy.getHeight(); y++) {
-        			 int pixel_value=pierwszy.getRaster().getSample(x, y, 0);
-        			 if (pixel_value>255) lut[255] += 1;
-        			 else lut[pixel_value] +=1;
+        	 BufferedImage grayScaled = new BufferedImage(pierwszy.getWidth(), pierwszy.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        	 Graphics gg = grayScaled.getGraphics();
+        	 System.out.println("W="+grayScaled.getWidth()+", H="+grayScaled.getHeight());
+        	 gg.drawImage(pierwszy, 0, 0, null);
+        	 for (int x=0; x<grayScaled.getWidth(); x++) {			// compute lookup table
+        		 for (int y=0; y<grayScaled.getHeight(); y++) {
+        			 int pixel_value=grayScaled.getRaster().getSample(x, y, 0);
+        			 if (pixel_value>255) lut[255] += 1; // this should never get called with grayscale images
+        			 else lut[pixel_value] = lut[pixel_value]+1;
         		 }
         	 }
-        	 
-        	 paintBars(g, lut, xAxis_startX+1, xAxis_startY+1, yAxis_startY-yAxis_endY-1);
+        	 int maxBarHeight = yAxis_endY-yAxis_startY-1;
+        	 paintBars(g, lut, xAxis_startX+1, xAxis_startY-1, maxBarHeight);
          }
          
          
@@ -126,16 +140,21 @@ public class APO07Hist extends JPanel {
     			triangle_coordinatesY = new int[] {endY-5,endY+5, endY};
     			break;
     	}
-    	
     	g2.fillPolygon(triangle_coordinatesX, triangle_coordinatesY, 3);
     }
     
-    private void paintBars(Graphics g, int[] lut, int startX, int startY, int barHeight)
+    private void paintBars(Graphics g, int[] lut, int xAxis_startX, int xAxis_startY, int maxBarHeight) // drawing values from 0 to 255, the bar width is 2 pixels per value
     {
-    	g.setColor(Color.PINK);
-    	
-    	for (int x=0; x<255; x++) {
-    		g.fillRect(startX+(2*x), barHeight-startY, 2, lut[x]);
+    	try {
+	    	int lutMaxValue = Arrays.stream(lut).max().orElseThrow(() -> new APO07Hist.HistogramPaintException("Unable to paint histogram. Wish I knew why..."));
+	    	g.setColor(Color.PINK);	    	
+	    	for (int x=0; x<255; x++) {
+	    		int barHeight = Math.round(((float)lut[x]/lutMaxValue)*Math.abs(maxBarHeight));
+	    		g.fillRect(xAxis_startX+(2*x), xAxis_startY-barHeight, 2, barHeight);
+	    	}
+    	}
+    	catch (HistogramPaintException e) {
+    		JOptionPane.showMessageDialog(null, e.getMessage());
     	}
     }
 }

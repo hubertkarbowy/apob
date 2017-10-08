@@ -47,8 +47,9 @@ public class HistWindow extends JFrame {
 	
 	public HistWindow(BufferedImage im1, BufferedImage im2)
 	{
-		this(im1);
-		Hist1Panel.setNewImage(im2);
+		this();
+		Hist1Panel.setNewImage(im1);
+		Hist2Panel.setNewImage(im2);
 	}
 
 }
