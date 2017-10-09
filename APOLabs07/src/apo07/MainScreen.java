@@ -85,7 +85,7 @@ public class MainScreen extends JFrame {
 		
 		mnOpenPic1 = new JMenuItem("Otwórz obraz 1");
 		mnOpenPic1.addActionListener((ActionEvent event) -> {
-			loadPicIntoPanel(panelFirstInputPic);
+			loadPicIntoPanel(panelFirstInputPic, 1);
         });
 		
 		
@@ -95,7 +95,7 @@ public class MainScreen extends JFrame {
 		mnOpenPic2 = new JMenuItem("Otwórz obraz 2");
 		mnOpenPic2.setMnemonic('2');
 		mnOpenPic2.addActionListener((ActionEvent event) -> {
-			loadPicIntoPanel(panelSecondInputPic);
+			loadPicIntoPanel(panelSecondInputPic, 2);
         });
 		
 		
@@ -184,15 +184,23 @@ public class MainScreen extends JFrame {
 		MainScreenMainPanel.add(allPicsPanel);
 	}
 	
-	private void loadPicIntoPanel(PicturePanel whichPanel) {
+	private void loadPicIntoPanel(PicturePanel whichPanel, int whichPanelAsInt) {
 		JFileChooser fileChooser = new JFileChooser();
 		int openStatus = fileChooser.showOpenDialog(null);
 		if (openStatus == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             System.out.println("Otwieranie pliku" + file.toString());
-            firstInputPic = new ImageIcon(file.toString());
-            Image firstInputPicImg = firstInputPic.getImage();
-            whichPanel.setInternalImage(firstInputPicImg);
+            if (whichPanelAsInt==1) { 
+            	firstInputPic = new ImageIcon(file.toString());
+            	Image firstInputPicImg = firstInputPic.getImage();
+                whichPanel.setInternalImage(firstInputPicImg);
+            }
+            if (whichPanelAsInt==2) { 
+            	secondInputPic = new ImageIcon(file.toString());
+            	Image secondInputPicImg = secondInputPic.getImage();
+                whichPanel.setInternalImage(secondInputPicImg);
+            }
+            
         } else {
             // cancel clicked
         }

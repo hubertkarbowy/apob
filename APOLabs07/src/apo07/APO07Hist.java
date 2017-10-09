@@ -6,13 +6,8 @@ import java.awt.geom.*;
 import java.awt.image.*;
 import java.util.Arrays;
 
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
-import sun.java2d.loops.FillParallelogram;
 
 import static apo07.APO07StaticUtilityMethods.*;
 

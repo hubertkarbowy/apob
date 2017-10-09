@@ -31,7 +31,7 @@ public class HistWindow extends JFrame {
 		Hist2Panel = new APO07Hist();
 		upperPanel.add(Hist2Panel);
 		Hist2Panel.setBorder(new LineBorder(new Color(0, 0, 0)));
-		Hist2Panel.setHistTile("Histogram 2\n (klasa)");
+		Hist2Panel.setHistTile("Histogram 2 (klasa)");
 		
 		panel = new JPanel();
 		panel.setMaximumSize(new Dimension(32767, 100));
