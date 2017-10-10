@@ -9,7 +9,7 @@ import java.util.Arrays;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import static apo07.APO07StaticUtilityMethods.*;
+import static apo07.APO07StaticHistMethods.*;
 
 enum ArrowDirection {
 	UPWARD, LEFTWARD
@@ -20,7 +20,6 @@ public class APO07Hist extends JPanel {
     
     int offsetX=0;
     int offsetY=0;
-    int[] lut = new int[256]; // lookup table
     String histTitle = "Ta klasa rozszerza JPanel.\nTu bedzie rysowany histogram.";
     static class HistogramPaintException extends RuntimeException { // just in case sth is f*ckd up inside the overriden paint method
     	public HistogramPaintException(String msg) {
@@ -51,11 +50,13 @@ public class APO07Hist extends JPanel {
     public void setHistTile (String histTitle) {
     	this.histTitle = histTitle;
     	repaint();
+    	revalidate();
     }
     
     public void setNewImage (BufferedImage im) {
     	this.pierwszy = im;
     	repaint();
+    	revalidate();
     }
     
     // METHODS THAT DO THE ACTUAL 2D DRAWING
@@ -63,8 +64,10 @@ public class APO07Hist extends JPanel {
     public void paint(Graphics g) {
     	 Graphics2D g2 = (Graphics2D) g;
          Dimension size = getSize();
-         
          Font font = new Font("Arial", Font.PLAIN, 14);
+
+         int[] lut = new int[256]; // lookup table
+         
          g.setFont(font);
          
          String tempString = histTitle;
@@ -103,13 +106,7 @@ public class APO07Hist extends JPanel {
         	 Graphics gg = grayScaled.getGraphics();
         	 System.out.println("W="+grayScaled.getWidth()+", H="+grayScaled.getHeight());
         	 gg.drawImage(pierwszy, 0, 0, null);
-        	 for (int x=0; x<grayScaled.getWidth(); x++) {			// compute lookup table
-        		 for (int y=0; y<grayScaled.getHeight(); y++) {
-        			 int pixel_value=grayScaled.getRaster().getSample(x, y, 0);
-        			 if (pixel_value>255) lut[255] += 1; // this should never get called with grayscale images
-        			 else lut[pixel_value] = lut[pixel_value]+1;
-        		 }
-        	 }
+        	 lut = getGrayscaleHist(grayScaled);
         	 int maxBarHeight = yAxis_endY-yAxis_startY-1;
         	 paintBars(g, lut, xAxis_startX+1, xAxis_startY-1, maxBarHeight);
          }

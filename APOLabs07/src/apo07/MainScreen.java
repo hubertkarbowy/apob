@@ -27,11 +27,14 @@ import javax.swing.event.MenuKeyEvent;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Frame;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
 	private JMenu mnPlik;
-	private JMenu mnJednopunkt;
+	private JMenu mnLab1;
 	private JSplitPane allPicsPanel;
 	private JSplitPane panelInputPics;
 	private PicturePanel panelFirstInputPic;
@@ -50,8 +53,14 @@ public class MainScreen extends JFrame {
 	private JPanel toolsPanel;
 	private JButton histButton;
 	private JLabel lblNarzdzia;
+	private JPanel clearPanel;
+	private JLabel lblCzy;
+	private JButton btnClrPic1;
+	private JButton btnClrPic2;
+	private JButton btnClrPicOut;
+	private JMenuItem mntmEq1;
 	
-	private Consumer<ActionEvent> aaa;
+	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
 
 	
 
@@ -59,6 +68,7 @@ public class MainScreen extends JFrame {
 	 * One bloated ugly constructor
 	 */
 	public MainScreen() {
+		setExtendedState(Frame.MAXIMIZED_BOTH);
 		setPreferredSize(new Dimension(900, 600));
 		setTitle("Algorytmy Przetwarzania Obrazów 07");
 		setMinimumSize(new Dimension(900, 600));
@@ -85,7 +95,7 @@ public class MainScreen extends JFrame {
 		
 		mnOpenPic1 = new JMenuItem("Otwórz obraz 1");
 		mnOpenPic1.addActionListener((ActionEvent event) -> {
-			loadPicIntoPanel(panelFirstInputPic, 1);
+			loadPicIntoPanel(panelFirstInputPic, PicturePanelAsEnum.INPUT_1);
         });
 		
 		
@@ -95,50 +105,60 @@ public class MainScreen extends JFrame {
 		mnOpenPic2 = new JMenuItem("Otwórz obraz 2");
 		mnOpenPic2.setMnemonic('2');
 		mnOpenPic2.addActionListener((ActionEvent event) -> {
-			loadPicIntoPanel(panelSecondInputPic, 2);
+			loadPicIntoPanel(panelSecondInputPic, PicturePanelAsEnum.INPUT_2);
         });
 		
 		
 		mnPlik.add(mnOpenPic2);
 		mnPlik.add(mnExit);
 		
-		mnJednopunkt = new JMenu("Jednopunktowe");
-		mnJednopunkt.setMnemonic('j');
-		menuBar.add(mnJednopunkt);
+		mnLab1 = new JMenu("Lab 1");
+		mnLab1.setMnemonic('1');
+		menuBar.add(mnLab1);
+		
+		mntmEq1 = new JMenuItem("Equalize (avg)");
+		mntmEq1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		mntmEq1.setMnemonic('a');
+		mnLab1.add(mntmEq1);
 		
 		// MainScreenMainPanel.add(menuBar);
 		setJMenuBar(menuBar);
 		
 		panelFirstInputPic = new PicturePanel(null);
-		panelFirstInputPic.setMaximumSize(new Dimension(100, 100));
-		panelFirstInputPic.setPreferredSize(new Dimension(100, 100));
-		panelFirstInputPic.setMinimumSize(new Dimension(100, 100));
+//		panelFirstInputPic.setMaximumSize(new Dimension(100, 100));
+//		panelFirstInputPic.setPreferredSize(new Dimension(100, 100));
+//		panelFirstInputPic.setMinimumSize(new Dimension(100, 100));
 		
 		panelSecondInputPic = new PicturePanel(null);
-		panelSecondInputPic.setPreferredSize(new Dimension(100, 100));
-		panelSecondInputPic.setMinimumSize(new Dimension(100, 10));
+//		panelSecondInputPic.setPreferredSize(new Dimension(100, 100));
+//		panelSecondInputPic.setMinimumSize(new Dimension(100, 10));
 		
 		panelOutputPic = new PicturePanel(null);
-		panelOutputPic.setPreferredSize(new Dimension(400, 10));
-		panelOutputPic.setMinimumSize(new Dimension(400, 10));
+//		panelOutputPic.setPreferredSize(new Dimension(400, 10));
+//		panelOutputPic.setMinimumSize(new Dimension(400, 10));
 		
 		panelFirstInputScrollPane = new JScrollPane(panelFirstInputPic);
-		panelFirstInputScrollPane.setPreferredSize(new Dimension(400, 300));
-		panelFirstInputScrollPane.setMinimumSize(new Dimension(400, 250));
+//		panelFirstInputScrollPane.setPreferredSize(new Dimension(400, 300));
+//		panelFirstInputScrollPane.setMinimumSize(new Dimension(400, 250));
 		panelSecondInputScrollPane = new JScrollPane(panelSecondInputPic);
-		panelSecondInputScrollPane.setPreferredSize(new Dimension(103, 200));
-		panelSecondInputScrollPane.setMinimumSize(new Dimension(22, 100));
+//		panelSecondInputScrollPane.setPreferredSize(new Dimension(103, 200));
+//		panelSecondInputScrollPane.setMinimumSize(new Dimension(22, 100));
 		panelOutputScrollPane = new JScrollPane(panelOutputPic);
-		panelOutputScrollPane.setPreferredSize(new Dimension(103, 300));
-		panelOutputScrollPane.setMinimumSize(new Dimension(103, 300));
+//		panelOutputScrollPane.setPreferredSize(new Dimension(103, 300));
+//		panelOutputScrollPane.setMinimumSize(new Dimension(103, 300));
 		
 		panelInputPics = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelFirstInputScrollPane, panelSecondInputScrollPane);
-		panelInputPics.setMinimumSize(new Dimension(400, 212));
-		panelInputPics.setPreferredSize(new Dimension(400, 615));
+		panelInputPics.setResizeWeight(0.5);
+//		panelInputPics.setMinimumSize(new Dimension(400, 212));
+//		panelInputPics.setPreferredSize(new Dimension(400, 615));
 		
 		allPicsPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelInputPics, panelOutputScrollPane);
-		allPicsPanel.setMinimumSize(new Dimension(900, 302));
-		allPicsPanel.setPreferredSize(new Dimension(900, 617));
+		allPicsPanel.setResizeWeight(0.4);
+//		allPicsPanel.setMinimumSize(new Dimension(900, 302));
+//		allPicsPanel.setPreferredSize(new Dimension(400, 617));
 		
 		// TOOLS PANEL
 		
@@ -151,6 +171,7 @@ public class MainScreen extends JFrame {
 		
 		
 		histButton = new JButton("Hist");
+		histButton.setMnemonic('h');
 		histButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Image firstInputPicImg = null;
@@ -181,21 +202,56 @@ public class MainScreen extends JFrame {
 		
 		MainScreenMainPanel.add(toolsPanel);
 		toolsPanel.setAlignmentX(LEFT_ALIGNMENT);
+		
+		clearPanel = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) clearPanel.getLayout();
+		flowLayout.setAlignment(FlowLayout.RIGHT);
+		toolsPanel.add(clearPanel);
+		
+		lblCzy = new JLabel("Czyść:");
+		clearPanel.add(lblCzy);
+		
+		btnClrPic1 = new JButton("Obraz 1");
+		btnClrPic1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				firstInputPic = null;
+				panelFirstInputPic.clearInternalImage();
+			}
+		});
+		clearPanel.add(btnClrPic1);
+		
+		btnClrPic2 = new JButton("Obraz 2");
+		btnClrPic2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				secondInputPic = null;
+				panelSecondInputPic.clearInternalImage();
+			}
+		});
+		clearPanel.add(btnClrPic2);
+		
+		btnClrPicOut = new JButton("Obraz out");
+		btnClrPicOut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				outputPic = null;
+				panelOutputPic.clearInternalImage();
+			}
+		});
+		clearPanel.add(btnClrPicOut);
 		MainScreenMainPanel.add(allPicsPanel);
 	}
 	
-	private void loadPicIntoPanel(PicturePanel whichPanel, int whichPanelAsInt) {
+	private void loadPicIntoPanel(PicturePanel whichPanel, PicturePanelAsEnum panelEnum) {
 		JFileChooser fileChooser = new JFileChooser();
 		int openStatus = fileChooser.showOpenDialog(null);
 		if (openStatus == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             System.out.println("Otwieranie pliku" + file.toString());
-            if (whichPanelAsInt==1) { 
+            if (panelEnum==PicturePanelAsEnum.INPUT_1) { 
             	firstInputPic = new ImageIcon(file.toString());
             	Image firstInputPicImg = firstInputPic.getImage();
                 whichPanel.setInternalImage(firstInputPicImg);
             }
-            if (whichPanelAsInt==2) { 
+            if (panelEnum==PicturePanelAsEnum.INPUT_2) { 
             	secondInputPic = new ImageIcon(file.toString());
             	Image secondInputPicImg = secondInputPic.getImage();
                 whichPanel.setInternalImage(secondInputPicImg);
