@@ -1,11 +1,58 @@
 package apo07;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.util.Arrays;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 public class APO07StaticHistMethods {
+	
+	static class BufferedImageHistogram {
+		private int type=0;
+		private int[] lutR = new int[256];
+		private int[] lutG = new int[256];
+		private int[] lutB = new int[256];
+		private int[] lutGray = new int[256];
+		BufferedImage im = null;
+		
+		BufferedImageHistogram(BufferedImage im) {
+			this.im = im;
+			setLut(lutR, 0);
+			setLut(lutGray, 0);
+			if (im.getType()==BufferedImage.TYPE_BYTE_GRAY) {
+				type=0;
+			}
+			else {
+				type=1;
+				setLut(lutG, 1);
+				setLut(lutB, 2);
+			}
+		}
+		
+		private void setLut(int[] which, int band) // band: 0 = red, 1 = green, 2 = blue
+		{
+			for (int x=0; x<im.getWidth(); x++) {			// compute lookup table
+				for (int y=0; y<im.getHeight(); y++) {
+					int pixel_value=im.getRaster().getSample(x, y, band);
+					if (pixel_value>255) which[255] += 1; // this should never get called with grayscale images
+					else which[pixel_value] = which[pixel_value]+1;
+			 }
+			}
+		}
+		
+		protected int[] getLut(int which) {
+			if (which==0) return lutR;
+			else if (which==1) return lutG;
+			else if (which==2) return lutB;
+			else return lutGray;
+		}
+		
+		protected BufferedImage getImage() {
+			return im;
+		}
+	}
 	
 	public static int[] getGrayscaleHist(BufferedImage grayScaled)
 	{
@@ -19,14 +66,21 @@ public class APO07StaticHistMethods {
 		}
 		return lut;
 	}
-	public static BufferedImage histEqualize(ImageIcon inputPic, int[] lut, int method) {
+	
+	public static BufferedImage histEqualize(BufferedImageHistogram inputPic, int method) {
+        
+     BufferedImage ret = new BufferedImage(inputPic.getImage().getHeight()+10, inputPic.getImage().getWidth()+10, inputPic.getImage().getType());
+     int imgType = inputPic.type;
+        
+     for (int band=0; band<2; band++) {   //for each band
+        int[] lut = inputPic.getLut(band);
         int R = 0;
         float hInt = (float)0.0;
         float[] left = new float[256];
         float[] right = new float[256];
         int[] newValue = new int[256];
-        float histAverage = (float)Arrays.stream(lut).average().orElse(0.0);
-
+    	float histAverage = (float)Arrays.stream(lut).average().orElse(0.0);
+        
         for (int i = 0; i < 256; ++i) {
             left[i] = R;
             hInt += lut[i];
@@ -41,7 +95,28 @@ public class APO07StaticHistMethods {
             else if (method==3) newValue[i] = (int)((left[i] + right[i]) / 2.0); // tzw. wlasna
         }
         
-        return null;
+        WritableRaster raster = inputPic.getImage().getRaster();
+        WritableRaster outraster = ret.getRaster();
+        JOptionPane.showMessageDialog(null, "H=" + outraster.getWidth() + "W=" +outraster.getHeight());
+       for (int i = 0; i < inputPic.getImage().getWidth(); i++) {
+            for (int j = 0; j < inputPic.getImage().getHeight(); j++) {
+                int color = raster.getSample(i, j, band);
+                
+                if (left[color] == right[color]) outraster.setSample(i, j, band, color);
+                else {
+                    switch (method) {
+                    case 1: 
+                    	outraster.setSample(i, j, band, newValue[color]);
+                    	break;
+                	default:
+                		break;
+                    }                  
+                }
+            }
+       }
+       if (imgType==0) break;
+     }
+     return ret;
 
         // ponizsze do przerobienia
         

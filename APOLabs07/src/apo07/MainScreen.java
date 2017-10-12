@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.function.Consumer;
 
 import javax.swing.JFrame;
@@ -18,11 +19,15 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JMenu;
 import java.awt.Dimension;
 import javax.swing.JSplitPane;
 import javax.swing.JLabel;
 import javax.swing.event.MenuKeyListener;
+
+import apo07.APO07StaticHistMethods.*;
+
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
@@ -43,9 +48,10 @@ public class MainScreen extends JFrame {
 	private JMenuItem mnOpenPic1;
 	private JMenuItem mnOpenPic2;
 	
-	private ImageIcon firstInputPic;
-	private ImageIcon secondInputPic;
-	private ImageIcon outputPic;
+	private BufferedImage firstInputBuff;
+	private BufferedImage secondInputBuff;
+	private BufferedImage outputBuff;
+	
 	private JScrollPane panelFirstInputScrollPane;
 	private JScrollPane panelSecondInputScrollPane;
 	private JScrollPane panelOutputScrollPane;
@@ -59,6 +65,7 @@ public class MainScreen extends JFrame {
 	private JButton btnClrPic2;
 	private JButton btnClrPicOut;
 	private JMenuItem mntmEq1;
+	private JButton btnNewButton;
 	
 	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
 
@@ -119,6 +126,13 @@ public class MainScreen extends JFrame {
 		mntmEq1 = new JMenuItem("Equalize (avg)");
 		mntmEq1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) {
+					JOptionPane.showMessageDialog(null, "Please load the first picture.");
+					return;
+				}
+				BufferedImageHistogram bih = new BufferedImageHistogram(firstInputBuff);
+				BufferedImage normalized = apo07.APO07StaticHistMethods.histEqualize(bih, 1);
+				panelOutputPic.setInternalImage(normalized);
 			}
 		});
 		mntmEq1.setMnemonic('a');
@@ -174,26 +188,7 @@ public class MainScreen extends JFrame {
 		histButton.setMnemonic('h');
 		histButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Image firstInputPicImg = null;
-				Image secondInputPicImg = null;
-				BufferedImage b = null;
-				BufferedImage b2 = null;
-				try { 
-					firstInputPicImg = firstInputPic.getImage();
-					secondInputPicImg = secondInputPic.getImage();
-					}
-				catch (Exception ex) {}
-				
-	           try {
-				b = new BufferedImage (firstInputPicImg.getWidth(null), firstInputPicImg.getHeight(null), BufferedImage.TYPE_BYTE_GRAY);
-				b.getGraphics().drawImage(firstInputPicImg, 0,0,null);
-				
-	            b2 = new BufferedImage (secondInputPicImg.getWidth(null), secondInputPicImg.getHeight(null), BufferedImage.TYPE_BYTE_GRAY);
-	            b2.getGraphics().drawImage(secondInputPicImg, 0,0,null);
-	           }
-	           catch (Exception ex) {}
-
-	           new HistWindow(b, b2).setVisible(true);
+	           new HistWindow(firstInputBuff, secondInputBuff).setVisible(true);
 				
 			}
 		});
@@ -208,13 +203,22 @@ public class MainScreen extends JFrame {
 		flowLayout.setAlignment(FlowLayout.RIGHT);
 		toolsPanel.add(clearPanel);
 		
+		btnNewButton = new JButton("info");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			//	BufferedImage bi = (BufferedImage) firstInputPicImg;
+			}
+		});
+		btnNewButton.setMnemonic('i');
+		clearPanel.add(btnNewButton);
+		
 		lblCzy = new JLabel("Czyść:");
 		clearPanel.add(lblCzy);
 		
 		btnClrPic1 = new JButton("Obraz 1");
 		btnClrPic1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				firstInputPic = null;
+				firstInputBuff = null;
 				panelFirstInputPic.clearInternalImage();
 			}
 		});
@@ -223,7 +227,7 @@ public class MainScreen extends JFrame {
 		btnClrPic2 = new JButton("Obraz 2");
 		btnClrPic2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				secondInputPic = null;
+				secondInputBuff = null;
 				panelSecondInputPic.clearInternalImage();
 			}
 		});
@@ -232,7 +236,7 @@ public class MainScreen extends JFrame {
 		btnClrPicOut = new JButton("Obraz out");
 		btnClrPicOut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				outputPic = null;
+				outputBuff = null;
 				panelOutputPic.clearInternalImage();
 			}
 		});
@@ -242,23 +246,24 @@ public class MainScreen extends JFrame {
 	
 	private void loadPicIntoPanel(PicturePanel whichPanel, PicturePanelAsEnum panelEnum) {
 		JFileChooser fileChooser = new JFileChooser();
+		try {
 		int openStatus = fileChooser.showOpenDialog(null);
 		if (openStatus == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             System.out.println("Otwieranie pliku" + file.toString());
             if (panelEnum==PicturePanelAsEnum.INPUT_1) { 
-            	firstInputPic = new ImageIcon(file.toString());
-            	Image firstInputPicImg = firstInputPic.getImage();
-                whichPanel.setInternalImage(firstInputPicImg);
+            	firstInputBuff = ImageIO.read(file);
+                whichPanel.setInternalImage(firstInputBuff);
             }
             if (panelEnum==PicturePanelAsEnum.INPUT_2) { 
-            	secondInputPic = new ImageIcon(file.toString());
-            	Image secondInputPicImg = secondInputPic.getImage();
-                whichPanel.setInternalImage(secondInputPicImg);
+            	secondInputBuff = ImageIO.read(file);
+                whichPanel.setInternalImage(secondInputBuff);
             }
             
         } else {
             // cancel clicked
         }
+		}
+		catch (IOException e) {}
 	}
 }
