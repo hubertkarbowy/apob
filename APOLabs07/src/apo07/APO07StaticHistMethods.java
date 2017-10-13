@@ -129,7 +129,7 @@ public class APO07StaticHistMethods {
      int[] iarray = new int[1];
      int anzpixel= inputPic.getImage().getWidth() * inputPic.getImage().getHeight();
      // build a Lookup table LUT containing scale factor
-        float[] lut2 = new float[anzpixel];
+        float[] lut2 = new float[anzpixel]; 
         for ( int i=0; i < 255; ++i )
         {
             sum += inputPic.getLut(0)[i];

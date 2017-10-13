@@ -22,7 +22,7 @@ public class PicturePanel extends JPanel {
 			g.drawImage(internalImage, 0, 0, this); // redraw on jsplitpane resize
 		}
 		else {
-			g.clearRect(getX(), getY(), getWidth(), getHeight());
+			g.clearRect(getX(), getY(), getWidth(), getHeight()); 
 		}
 	}
 	

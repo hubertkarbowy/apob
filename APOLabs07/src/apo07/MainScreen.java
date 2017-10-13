@@ -157,7 +157,7 @@ public class MainScreen extends JFrame {
 					return;
 				}
 				BufferedImageHistogram bih = new BufferedImageHistogram(firstInputBuff);
-				outputBuff = apo07.APO07StaticHistMethods.histEqualize(bih, 2);
+				outputBuff = apo07.APO07StaticHistMethods.histEqualize(bih, 2); 
 				panelOutputPic.setInternalImage(outputBuff);
 				notifyHistWindow();
 			}
