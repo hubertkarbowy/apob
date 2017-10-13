@@ -132,7 +132,7 @@ public class HistWindow extends JFrame {
 		// this.im1=im1; this.im2=im2; this.imout=null;
 		this.imout=imout;
 //		Hist1Panel.setNewImage(im1);
-//		Hist2Panel.setNewImage(im2);
+		Hist2Panel.setNewImage(imout);
 	}
 
 }

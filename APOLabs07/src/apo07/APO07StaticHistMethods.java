@@ -69,7 +69,7 @@ public class APO07StaticHistMethods {
 	
 	public static BufferedImage histEqualize(BufferedImageHistogram inputPic, int method) {
         
-     BufferedImage ret = new BufferedImage(inputPic.getImage().getHeight()+10, inputPic.getImage().getWidth()+10, inputPic.getImage().getType());
+     BufferedImage ret = new BufferedImage(inputPic.getImage().getWidth(), inputPic.getImage().getHeight(), inputPic.getImage().getType());
      int imgType = inputPic.type;
         
      for (int band=0; band<2; band++) {   //for each band
@@ -106,7 +106,7 @@ public class APO07StaticHistMethods {
                 else {
                     switch (method) {
                     case 1: 
-                    	outraster.setSample(i, j, band, newValue[color]);
+                    	outraster.setSample(i, j, band, color);
                     	break;
                 	default:
                 		break;
