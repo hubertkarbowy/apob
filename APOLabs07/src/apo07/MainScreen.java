@@ -32,9 +32,13 @@ import javax.swing.event.MenuKeyEvent;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageFilter;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import javax.swing.KeyStroke;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -65,7 +69,10 @@ public class MainScreen extends JFrame {
 	private JButton btnClrPic2;
 	private JButton btnClrPicOut;
 	private JMenuItem mntmEq1;
-	private JButton btnNewButton;
+	
+	private HistWindow histWindowSingleton;
+	private JButton btnZamieNaCzb;
+	private JMenuItem mntmEqualizeown;
 	
 	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
 
@@ -101,6 +108,7 @@ public class MainScreen extends JFrame {
         });
 		
 		mnOpenPic1 = new JMenuItem("Otwórz obraz 1");
+		mnOpenPic1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, InputEvent.CTRL_MASK));
 		mnOpenPic1.addActionListener((ActionEvent event) -> {
 			loadPicIntoPanel(panelFirstInputPic, PicturePanelAsEnum.INPUT_1);
         });
@@ -110,6 +118,7 @@ public class MainScreen extends JFrame {
 		mnPlik.add(mnOpenPic1);
 		
 		mnOpenPic2 = new JMenuItem("Otwórz obraz 2");
+		mnOpenPic2.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_2, InputEvent.CTRL_MASK));
 		mnOpenPic2.setMnemonic('2');
 		mnOpenPic2.addActionListener((ActionEvent event) -> {
 			loadPicIntoPanel(panelSecondInputPic, PicturePanelAsEnum.INPUT_2);
@@ -124,6 +133,7 @@ public class MainScreen extends JFrame {
 		menuBar.add(mnLab1);
 		
 		mntmEq1 = new JMenuItem("Equalize (avg)");
+		mntmEq1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_MASK));
 		mntmEq1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (firstInputBuff==null) {
@@ -131,12 +141,29 @@ public class MainScreen extends JFrame {
 					return;
 				}
 				BufferedImageHistogram bih = new BufferedImageHistogram(firstInputBuff);
-				BufferedImage normalized = apo07.APO07StaticHistMethods.histEqualize(bih, 1);
-				panelOutputPic.setInternalImage(normalized);
+				outputBuff = apo07.APO07StaticHistMethods.histEqualize(bih, 1);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
 			}
 		});
 		mntmEq1.setMnemonic('a');
 		mnLab1.add(mntmEq1);
+		
+		mntmEqualizeown = new JMenuItem("Equalize (subtr)");
+		mntmEqualizeown.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) {
+					JOptionPane.showMessageDialog(null, "Please load the first picture.");
+					return;
+				}
+				BufferedImageHistogram bih = new BufferedImageHistogram(firstInputBuff);
+				outputBuff = apo07.APO07StaticHistMethods.histEqualize(bih, 2);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmEqualizeown.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+		mnLab1.add(mntmEqualizeown);
 		
 		// MainScreenMainPanel.add(menuBar);
 		setJMenuBar(menuBar);
@@ -183,12 +210,14 @@ public class MainScreen extends JFrame {
 		lblNarzdzia = new JLabel("Narzędzia:");
 		toolsPanel.add(lblNarzdzia);
 		
+		histWindowSingleton = new HistWindow(firstInputBuff, secondInputBuff, outputBuff);
+		histWindowSingleton.setVisible(false);
 		
-		histButton = new JButton("Hist");
+		histButton = new JButton("Histogramy");
 		histButton.setMnemonic('h');
 		histButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-	           new HistWindow(firstInputBuff, secondInputBuff).setVisible(true);
+	           histWindowSingleton.setVisible(true);
 				
 			}
 		});
@@ -198,19 +227,33 @@ public class MainScreen extends JFrame {
 		MainScreenMainPanel.add(toolsPanel);
 		toolsPanel.setAlignmentX(LEFT_ALIGNMENT);
 		
+		btnZamieNaCzb = new JButton("Zamień na cz-b");
+		btnZamieNaCzb.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				BufferedImage tmpImg;
+				if (firstInputBuff!=null) {
+					tmpImg = new BufferedImage(firstInputBuff.getWidth(), firstInputBuff.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+					tmpImg.getGraphics().drawImage(firstInputBuff, 0, 0, null);
+					firstInputBuff=tmpImg;
+					panelFirstInputPic.setInternalImage(firstInputBuff);
+				}
+				
+				if (secondInputBuff!=null) {
+					tmpImg = new BufferedImage(secondInputBuff.getWidth(), secondInputBuff.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+					tmpImg.getGraphics().drawImage(secondInputBuff, 0, 0, null);
+					secondInputBuff=tmpImg;
+					panelSecondInputPic.setInternalImage(secondInputBuff);
+				}
+				notifyHistWindow();
+			}
+		});
+		btnZamieNaCzb.setMnemonic('c');
+		toolsPanel.add(btnZamieNaCzb);
+		
 		clearPanel = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) clearPanel.getLayout();
 		flowLayout.setAlignment(FlowLayout.RIGHT);
 		toolsPanel.add(clearPanel);
-		
-		btnNewButton = new JButton("info");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			//	BufferedImage bi = (BufferedImage) firstInputPicImg;
-			}
-		});
-		btnNewButton.setMnemonic('i');
-		clearPanel.add(btnNewButton);
 		
 		lblCzy = new JLabel("Czyść:");
 		clearPanel.add(lblCzy);
@@ -220,6 +263,7 @@ public class MainScreen extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				firstInputBuff = null;
 				panelFirstInputPic.clearInternalImage();
+				notifyHistWindow();
 			}
 		});
 		clearPanel.add(btnClrPic1);
@@ -229,6 +273,7 @@ public class MainScreen extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				secondInputBuff = null;
 				panelSecondInputPic.clearInternalImage();
+				notifyHistWindow();
 			}
 		});
 		clearPanel.add(btnClrPic2);
@@ -238,6 +283,7 @@ public class MainScreen extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				outputBuff = null;
 				panelOutputPic.clearInternalImage();
+				notifyHistWindow();
 			}
 		});
 		clearPanel.add(btnClrPicOut);
@@ -259,11 +305,16 @@ public class MainScreen extends JFrame {
             	secondInputBuff = ImageIO.read(file);
                 whichPanel.setInternalImage(secondInputBuff);
             }
+            notifyHistWindow();
             
         } else {
             // cancel clicked
         }
 		}
 		catch (IOException e) {}
+	}
+	
+	private void notifyHistWindow() {
+		histWindowSingleton.updateHistograms(firstInputBuff, secondInputBuff, outputBuff);
 	}
 }

@@ -32,7 +32,6 @@ public class HistWindow extends JFrame {
 	
 	
 	public HistWindow() {
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(new Rectangle(0, 0, 1200, 600));
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		
@@ -104,7 +103,7 @@ public class HistWindow extends JFrame {
 			}
 		});
 		rightHistChooser.setModel(new DefaultComboBoxModel(new String[] {"Obraz 1", "Obraz 2", "Obraz Wy"}));
-		rightHistChooser.setSelectedIndex(1); // todo: zmienic na out
+		rightHistChooser.setSelectedIndex(2); // todo: zmienic na out
 		rightHistPanel.add(rightHistChooser);
 		
 		this.im1=null; this.im2=null; this.imout=null;
@@ -134,5 +133,17 @@ public class HistWindow extends JFrame {
 //		Hist1Panel.setNewImage(im1);
 		Hist2Panel.setNewImage(imout);
 	}
-
+	
+	public void updateHistograms(BufferedImage im1, BufferedImage im2, BufferedImage imout) {
+		this.im1=im1; this.im2=im2; this.imout=imout;
+		
+		int currentSelection1 = leftHistChooser.getSelectedIndex();
+		int currentSelection2 = rightHistChooser.getSelectedIndex();
+		if (currentSelection1==0) Hist1Panel.setNewImage(this.im1);
+		if (currentSelection1==1) Hist1Panel.setNewImage(this.im2);
+		if (currentSelection1==2) Hist1Panel.setNewImage(this.imout);
+		if (currentSelection2==0) Hist2Panel.setNewImage(this.im1);
+		if (currentSelection2==1) Hist2Panel.setNewImage(this.im2);
+		if (currentSelection2==2) Hist2Panel.setNewImage(this.imout);
+	}
 }
