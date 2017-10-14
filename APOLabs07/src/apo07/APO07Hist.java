@@ -54,6 +54,9 @@ public class APO07Hist extends JPanel {
     }
     
     public void setNewImage (BufferedImage im) {
+    	this.pierwszy=null;
+    	repaint();
+    	revalidate();
     	this.pierwszy = im;
     	repaint();
     	revalidate();
@@ -98,7 +101,7 @@ public class APO07Hist extends JPanel {
          if (pierwszy==null) { // Clear the histogram view
         	 g.setColor(Color.WHITE);
         	 g.fillRect(yAxis_endX+1, yAxis_endY-1, 512, yAxis_startY-yAxis_endY-1);
-        	 System.out.println("a");
+        	 System.out.println("Cleared hist");
          }
          else
          {
@@ -107,6 +110,7 @@ public class APO07Hist extends JPanel {
         	 System.out.println("W="+grayScaled.getWidth()+", H="+grayScaled.getHeight());
         	 gg.drawImage(pierwszy, 0, 0, null);
         	 lut = getGrayscaleHist(grayScaled);
+        	 Arrays.stream(lut).forEach(x -> System.out.print(""+x+"*"));
         	 int maxBarHeight = yAxis_endY-yAxis_startY-1;
         	 paintBars(g, lut, xAxis_startX+1, xAxis_startY-1, maxBarHeight);
          }
@@ -140,7 +144,7 @@ public class APO07Hist extends JPanel {
     	try {
 	    	int lutMaxValue = Arrays.stream(lut).max().orElseThrow(() -> new APO07Hist.HistogramPaintException("Unable to paint histogram. Wish I knew why..."));
 	    	g.setColor(Color.PINK);	    	
-	    	for (int x=0; x<255; x++) {
+	    	for (int x=0; x<=255; x++) {
 	    		int barHeight = Math.round(((float)lut[x]/lutMaxValue)*Math.abs(maxBarHeight));
 	    		g.fillRect(xAxis_startX+(2*x), xAxis_startY-barHeight, 2, barHeight);
 	    	}

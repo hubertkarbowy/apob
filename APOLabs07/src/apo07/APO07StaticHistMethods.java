@@ -1,5 +1,6 @@
 package apo07;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
@@ -63,6 +64,7 @@ public class APO07StaticHistMethods {
 		for (int x=0; x<grayScaled.getWidth(); x++) {			// compute lookup table
 			for (int y=0; y<grayScaled.getHeight(); y++) {
 				int pixel_value=grayScaled.getRaster().getSample(x, y, 0);
+				// int pixel_value= grayScaled.getRGB(x, y)& 0xFF;
 				if (pixel_value>255) lut[255] += 1; // this should never get called with grayscale images
 				else lut[pixel_value] = lut[pixel_value]+1;
 		 }
@@ -75,77 +77,84 @@ public class APO07StaticHistMethods {
      BufferedImage ret = new BufferedImage(inputPic.getImage().getWidth(), inputPic.getImage().getHeight(), inputPic.getImage().getType());
      int imgType = inputPic.type;
      
-     for (int band=0; band<=2; band++) {   //for each band
-        int[] lut = inputPic.getLut(band);
-        int R = 0;
-        float hInt = (float)0.0;
-        float[] left = new float[256];
-        float[] right = new float[256];
-        int[] newValue = new int[256];
-    	float histAverage = (float)Arrays.stream(lut).average().orElse(0.0);
-    	
-        for (int Z = 0; Z < 256; Z++) {
-            left[Z] = R;
-            hInt += lut[Z];
-            while (hInt > histAverage) {
-                hInt -= histAverage;
-                R++;
-            }
-
-            right[Z] = R;
-            if (method==1) newValue[Z] = (int)Math.round(((left[Z] + right[Z]) / 2.0)); // srednia
-            else if (method==2) newValue[Z] = (int)(right[Z] - left[Z]); // losowa
-        }
+  //   
+        int[] lutR = inputPic.getLut(0);
+        int[] lutG = inputPic.getLut(1);
+        int[] lutB = inputPic.getLut(2);
+        int[][] lut = {lutR, lutG, lutB};
+        Color[][] colortab = new Color[inputPic.getImage().getWidth()][inputPic.getImage().getHeight()];
         
-        WritableRaster raster = inputPic.getImage().getRaster();
-        WritableRaster outraster = ret.getRaster();
-        JOptionPane.showMessageDialog(null, "H=" + outraster.getWidth() + "W=" +outraster.getHeight());
-       for (int i = 0; i < inputPic.getImage().getWidth(); i++) {
-            for (int j = 0; j < inputPic.getImage().getHeight(); j++) {
-            	int color = raster.getSample(i, j, band);               
-                if (left[color] == right[color]) outraster.setSample(i, j, band, color);
-                else {
-                    switch (method) {
-                    case 1:
-                    	outraster.setSample(i, j, band, newValue[color]	);
-                    	break;
-                    case 2:
-                    	int randomNum = 0 + (int)(Math.random() * newValue[color]);
-                    	randomNum += left[color];
-                    	outraster.setSample(i, j, band, randomNum);
-                	default:
-                		break;
-                    }                  
-                }
-            }
-       }
-       if (imgType==0 || (imgType==1 && band==2)) break;
-     }
-     
-     /*
-     ret = new BufferedImage(inputPic.getImage().getWidth(), inputPic.getImage().getHeight(), inputPic.getImage().getType());
-     
-     int sum =0;
-     int[] iarray = new int[1];
-     int anzpixel= inputPic.getImage().getWidth() * inputPic.getImage().getHeight();
-     // build a Lookup table LUT containing scale factor
-        float[] lut2 = new float[anzpixel]; 
-        for ( int i=0; i < 255; ++i )
-        {
-            sum += inputPic.getLut(0)[i];
-            lut2[i] = sum * 255 / anzpixel;
-        }
-
-        // transform image using sum histogram as a Lookup table
-        for (int x = 1; x < inputPic.getImage().getWidth(); x++) {
-            for (int y = 1; y < inputPic.getImage().getHeight(); y++) {
-                int valueBefore=inputPic.getImage().getRaster().getPixel(x, y,iarray)[0];
-                int valueAfter= (int) lut2[valueBefore];
-                iarray[0]=valueAfter;
-                ret.getRaster().setPixel(x, y, iarray); 
-            }
-        }
-     */
+    	float histAverageR = (float)Arrays.stream(lutR).average().orElse(0.0);
+    	float histAverageG = (float)Arrays.stream(lutG).average().orElse(0.0);
+    	float histAverageB = (float)Arrays.stream(lutB).average().orElse(0.0);
+    	float histAverage[] = {histAverageR, histAverageG, histAverageB};
+    	
+    	// for (int band=0; band<=2; band++) {   //for each band
+    		float hInt[] = {(float)0.0, (float)0.0, (float)0.0};
+			int R[] = {0,0,0};
+			float[][] left = {new float[256], new float[256], new float[256]};
+	        float[][] right = {new float[256], new float[256], new float[256]};
+	        int[][] newValue = {new int[256],new int[256],new int[256]};
+		
+	        for (int Z = 0; Z < 256; Z++) {
+	            left[0][Z] = R[0]; left[1][Z] = R[1]; left[2][Z] = R[2];
+	            hInt[0] += lut[0][Z]; hInt[1] += lut[1][Z]; hInt[1] += lut[1][Z]; hInt[2] += lut[2][Z];
+	            
+	            for (int band=0; band<=2; band++) {
+	            while (hInt[band] > histAverage[band]) {
+	                hInt[band] -= histAverage[band];
+	                R[band]++;
+	            }
+	            }
+	            right[0][Z] = R[0]; right[1][Z] = R[1]; right[2][Z] = R[2];
+	            if (method==1) {
+	            	newValue[0][Z] = (int)Math.round(((left[0][Z] + right[0][Z]) / 2.0)); // srednia
+	            	newValue[1][Z] = (int)Math.round(((left[1][Z] + right[1][Z]) / 2.0)); // srednia
+	            	newValue[2][Z] = (int)Math.round(((left[2][Z] + right[2][Z]) / 2.0)); // srednia
+	            }
+	            else if (method==2) {
+	            	newValue[0][Z] = (int)(right[0][Z] - left[0][Z]); // losowa
+	            	newValue[1][Z] = (int)(right[1][Z] - left[1][Z]); // losowa
+	            	newValue[2][Z] = (int)(right[2][Z] - left[2][Z]); // losowa
+	            }
+	        }
+	        
+	     //   WritableRaster raster = inputPic.getImage().getRaster();
+	     //   WritableRaster outraster = ret.getRaster();
+	        // JOptionPane.showMessageDialog(null, "H=" + outraster.getWidth() + "W=" +outraster.getHeight());
+	       for (int i = 0; i < inputPic.getImage().getWidth(); i++) {
+	            for (int j = 0; j < inputPic.getImage().getHeight(); j++) {
+	            	// int color = raster.getSample(i, j, band);
+	            	
+	            	int rgba = inputPic.getImage().getRGB(i, j);
+	                Color col = new Color(rgba, true);
+	                int[] oldcolor ={col.getRed(), col.getGreen(), col.getBlue()};
+	                int[] newcolor = {0,0,0};
+	            	
+	                for (int band=0; band<=2; band++) {
+		                if (left[band][oldcolor[band]] == right[band][oldcolor[band]]) newcolor[band]=oldcolor[band]; // outraster.setSample(i, j, band, color);
+		                else {
+		                    switch (method) {
+		                    case 1:
+		                    	// outraster.setSample(i, j, band, newValue[color]	);
+		                    	newcolor[band] = newValue[band][oldcolor[band]];
+		                    	break;
+		                    case 2:
+		                    	int randomNum = 0 + (int)(Math.random() * newValue[band][oldcolor[band]]);
+		                    	randomNum += left[band][oldcolor[band]];
+		                    	// outraster.setSample(i, j, band, randomNum);
+		                    	newcolor[band] = randomNum;
+		                    	break;
+		                	default:
+		                		break;
+		                    }                  
+		                }
+	                }
+	                Color newCol = new Color(Math.max(newcolor[0], 255), Math.max(newcolor[1], 255), Math.max(newcolor[2], 255));
+	                ret.setRGB(i, j, newCol.getRGB());
+	            }
+	       }
+	   //    if (imgType==0 || (imgType==1 && band==2)) break
      
      return ret;
 

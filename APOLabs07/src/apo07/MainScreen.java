@@ -1,44 +1,23 @@
 package apo07;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.*;
+
 import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JMenu;
-import java.awt.Dimension;
-import javax.swing.JSplitPane;
-import javax.swing.JLabel;
-import javax.swing.event.MenuKeyListener;
+
 
 import apo07.APO07StaticHistMethods.*;
 
-import javax.swing.event.MenuKeyEvent;
-import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageFilter;
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import javax.swing.KeyStroke;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
+import java.awt.image.*;
+
+import static apo07.APO07StaticPointMethods.*;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -73,6 +52,10 @@ public class MainScreen extends JFrame {
 	private HistWindow histWindowSingleton;
 	private JButton btnZamieNaCzb;
 	private JMenuItem mntmEqualizeown;
+	private JMenu mnLab;
+	private JMenuItem mntmNegate;
+	private JMenuItem mntmThreshold;
+	private JMenuItem mntmThresholdrange;
 	
 	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
 
@@ -152,10 +135,7 @@ public class MainScreen extends JFrame {
 		mntmEqualizeown = new JMenuItem("Equalize (subtr)");
 		mntmEqualizeown.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (firstInputBuff==null) {
-					JOptionPane.showMessageDialog(null, "Please load the first picture.");
-					return;
-				}
+				if (firstInputBuff==null) { JOptionPane.showMessageDialog(null, "Please load the first picture."); return; }
 				BufferedImageHistogram bih = new BufferedImageHistogram(firstInputBuff);
 				outputBuff = apo07.APO07StaticHistMethods.histEqualize(bih, 2); 
 				panelOutputPic.setInternalImage(outputBuff);
@@ -168,38 +148,65 @@ public class MainScreen extends JFrame {
 		// MainScreenMainPanel.add(menuBar);
 		setJMenuBar(menuBar);
 		
-		panelFirstInputPic = new PicturePanel(null);
-//		panelFirstInputPic.setMaximumSize(new Dimension(100, 100));
-//		panelFirstInputPic.setPreferredSize(new Dimension(100, 100));
-//		panelFirstInputPic.setMinimumSize(new Dimension(100, 100));
+		mnLab = new JMenu("Lab 2");
+		mnLab.setMnemonic('2');
+		menuBar.add(mnLab);
 		
+		mntmNegate = new JMenuItem("Negate");
+		mntmNegate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (firstInputBuff==null) { JOptionPane.showMessageDialog(null, "Please load the first picture."); return; }
+				else {
+					// panelOutputPic.setInternalImage(negateImg(firstInputBuff));
+					outputBuff = negateImg(firstInputBuff);
+					panelOutputPic.setInternalImage(outputBuff);
+					notifyHistWindow();
+				}
+			}
+		});
+		mntmNegate.setMnemonic('n');
+		mnLab.add(mntmNegate);
+		
+		mntmThreshold = new JMenuItem("Threshold");
+		mntmThreshold.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (firstInputBuff==null) { JOptionPane.showMessageDialog(null, "Please load the first picture."); return; }
+				else {
+					// panelOutputPic.setInternalImage(negateImg(firstInputBuff));
+					outputBuff = thresholdImg(firstInputBuff);
+					panelOutputPic.setInternalImage(outputBuff);
+					notifyHistWindow();
+				}
+			}
+		});
+		mntmThreshold.setMnemonic('t');
+		mnLab.add(mntmThreshold);
+		
+		mntmThresholdrange = new JMenuItem("Threshold (range)");
+		mntmThresholdrange.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				outputBuff = thresholdRangeImg(firstInputBuff);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmThresholdrange.setMnemonic('r');
+		mnLab.add(mntmThresholdrange);
+		
+		panelFirstInputPic = new PicturePanel(null);
 		panelSecondInputPic = new PicturePanel(null);
-//		panelSecondInputPic.setPreferredSize(new Dimension(100, 100));
-//		panelSecondInputPic.setMinimumSize(new Dimension(100, 10));
 		
 		panelOutputPic = new PicturePanel(null);
-//		panelOutputPic.setPreferredSize(new Dimension(400, 10));
-//		panelOutputPic.setMinimumSize(new Dimension(400, 10));
 		
 		panelFirstInputScrollPane = new JScrollPane(panelFirstInputPic);
-//		panelFirstInputScrollPane.setPreferredSize(new Dimension(400, 300));
-//		panelFirstInputScrollPane.setMinimumSize(new Dimension(400, 250));
 		panelSecondInputScrollPane = new JScrollPane(panelSecondInputPic);
-//		panelSecondInputScrollPane.setPreferredSize(new Dimension(103, 200));
-//		panelSecondInputScrollPane.setMinimumSize(new Dimension(22, 100));
 		panelOutputScrollPane = new JScrollPane(panelOutputPic);
-//		panelOutputScrollPane.setPreferredSize(new Dimension(103, 300));
-//		panelOutputScrollPane.setMinimumSize(new Dimension(103, 300));
 		
 		panelInputPics = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panelFirstInputScrollPane, panelSecondInputScrollPane);
 		panelInputPics.setResizeWeight(0.5);
-//		panelInputPics.setMinimumSize(new Dimension(400, 212));
-//		panelInputPics.setPreferredSize(new Dimension(400, 615));
 		
 		allPicsPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelInputPics, panelOutputScrollPane);
 		allPicsPanel.setResizeWeight(0.4);
-//		allPicsPanel.setMinimumSize(new Dimension(900, 302));
-//		allPicsPanel.setPreferredSize(new Dimension(400, 617));
 		
 		// TOOLS PANEL
 		
@@ -312,6 +319,12 @@ public class MainScreen extends JFrame {
         }
 		}
 		catch (IOException e) {}
+	}
+	
+	private void setOutPic(BufferedImage imgToSet) {
+		outputBuff = imgToSet; 
+		panelOutputPic.setInternalImage(outputBuff);
+		notifyHistWindow();
 	}
 	
 	private void notifyHistWindow() {
