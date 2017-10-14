@@ -158,7 +158,7 @@ public class MainScreen extends JFrame {
 				if (firstInputBuff==null) { JOptionPane.showMessageDialog(null, "Please load the first picture."); return; }
 				else {
 					// panelOutputPic.setInternalImage(negateImg(firstInputBuff));
-					outputBuff = negateImg(firstInputBuff);
+					outputBuff = invertImg(firstInputBuff);
 					panelOutputPic.setInternalImage(outputBuff);
 					notifyHistWindow();
 				}
@@ -241,6 +241,12 @@ public class MainScreen extends JFrame {
 				if (firstInputBuff!=null) {
 					tmpImg = new BufferedImage(firstInputBuff.getWidth(), firstInputBuff.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 					tmpImg.getGraphics().drawImage(firstInputBuff, 0, 0, null);
+		             // convert the original colored image to grayscale
+		            // ColorConvertOp op = new ColorConvertOp(firstInputBuff.getColorModel().getColorSpace(), tmpImg.getColorModel().getColorSpace(),null);
+		            // op.filter(firstInputBuff,tmpImg);
+		             JOptionPane.showMessageDialog(null, "# of bands (gs?): " + tmpImg.getRaster().getNumBands() + " data type= " + tmpImg.getSampleModel().getNumBands());
+					
+					
 					firstInputBuff=tmpImg;
 					panelFirstInputPic.setInternalImage(firstInputBuff);
 				}

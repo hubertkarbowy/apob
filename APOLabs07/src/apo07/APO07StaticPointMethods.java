@@ -1,40 +1,51 @@
 package apo07;
 
 import java.awt.Color;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
 import javax.swing.JOptionPane;
 
+import static apo07.APO07StaticUtilityMethods.*;
+
 public class APO07StaticPointMethods {
 
-	public static BufferedImage negateImg(BufferedImage im) {
-		BufferedImage ret = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
+	public static BufferedImage invertImg(BufferedImage im) {
+		BufferedImage ret = getEmptyLinearImage(im);
+		Raster inraster = im.getRaster();
+		WritableRaster outraster = ret.getRaster();
+		int[] insample = new int[inraster.getNumBands()];
+		int[] outsample = new int[outraster.getNumBands()];
+		
 		int type = im.getType();
 			for (int x=0; x<im.getWidth(); x++) {
 				for (int y=0; y<im.getHeight(); y++) {
-					int rgba = im.getRGB(x, y);
-					int pixelValue;
-	                Color col = new Color(rgba, true);
-	                if (im.getType()==BufferedImage.TYPE_BYTE_GRAY)
-	                {
-	                //	JOptionPane.showMessageDialog(null, "This is a BW img!");
-	                	//col = new Color((255 - (col.getRed())),
-                        //        (255 - (col.getGreen())), 
-                        //        (255 - (col.getBlue())));
-	                	WritableRaster wr = im.getRaster();
-	                	int aa[] = new int[1];
-	                	wr.getPixel(x, y, aa);
-	                	pixelValue = 255 - aa[0];
-	                	
-	                }
-	                else {
-	                col = new Color(255 - col.getRed(),
-	                                255 - col.getGreen(),
-	                                255 - col.getBlue());
-	                pixelValue = col.getRGB();
-	                }
-	                
-	                ret.setRGB(x, y, pixelValue);
+					inraster.getPixel(x, y, insample);
+					for (int component=0; component<insample.length; component++) {outsample[component] = 255-insample[component];}
+//					int rgba = im.getRGB(x, y);
+//					int pixelValue;
+//	                Color col = new Color(rgba, true);
+//	                if (im.getType()==BufferedImage.TYPE_BYTE_GRAY)
+//	                {
+//	                	WritableRaster wr = im.getRaster();
+//	                	int aa[] = new int[1];
+//	                	wr.getPixel(x, y, aa);
+//	                	pixelValue = 255 - aa[0];
+//	                	
+//	                }
+	              //  else {
+//	                col = new Color(255 - col.getRed(),
+//	                                0,0);
+//	                pixelValue = col.getRGB();
+//	              //  }
+	                //ret.setRGB(x, y, pixelValue);
+					
+//                	int oldPV = im.getRaster().getSample(x, y, 0);
+//                	if (x % 10 == 0 ) System.out.println(oldPV + "*");
+//                	int pixelValue = 255 - oldPV;
+//                	ret.getRaster().setSample(x, y, 0, pixelValue);
+					outraster.setPixel(x, y, outsample);
 				}
 			}
 		return ret;
