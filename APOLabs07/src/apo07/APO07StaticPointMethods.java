@@ -19,7 +19,7 @@ public class APO07StaticPointMethods {
 	                {
 	                //	JOptionPane.showMessageDialog(null, "This is a BW img!");
 	                	//col = new Color((255 - (col.getRed())),
-                        //        (255 - (col.getGreen())),
+                        //        (255 - (col.getGreen())), 
                         //        (255 - (col.getBlue())));
 	                	WritableRaster wr = im.getRaster();
 	                	int aa[] = new int[1];
