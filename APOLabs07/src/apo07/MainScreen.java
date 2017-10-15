@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.*;
 
 import static apo07.APO07StaticPointMethods.*;
+import static apo07.APO07StaticUtilityMethods.*;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -53,9 +54,10 @@ public class MainScreen extends JFrame {
 	private JButton btnZamieNaCzb;
 	private JMenuItem mntmEqualizeown;
 	private JMenu mnLab;
-	private JMenuItem mntmNegate;
+	private JMenuItem mntmInvert;
 	private JMenuItem mntmThreshold;
 	private JMenuItem mntmThresholdrange;
+	private JMenuItem mntmStretch;
 	
 	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
 
@@ -152,8 +154,8 @@ public class MainScreen extends JFrame {
 		mnLab.setMnemonic('2');
 		menuBar.add(mnLab);
 		
-		mntmNegate = new JMenuItem("Negate");
-		mntmNegate.addActionListener(new ActionListener() {
+		mntmInvert = new JMenuItem("Invert");
+		mntmInvert.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (firstInputBuff==null) { JOptionPane.showMessageDialog(null, "Please load the first picture."); return; }
 				else {
@@ -164,15 +166,14 @@ public class MainScreen extends JFrame {
 				}
 			}
 		});
-		mntmNegate.setMnemonic('n');
-		mnLab.add(mntmNegate);
+		mntmInvert.setMnemonic('n');
+		mnLab.add(mntmInvert);
 		
 		mntmThreshold = new JMenuItem("Threshold");
 		mntmThreshold.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (firstInputBuff==null) { JOptionPane.showMessageDialog(null, "Please load the first picture."); return; }
 				else {
-					// panelOutputPic.setInternalImage(negateImg(firstInputBuff));
 					outputBuff = thresholdImg(firstInputBuff);
 					panelOutputPic.setInternalImage(outputBuff);
 					notifyHistWindow();
@@ -192,6 +193,22 @@ public class MainScreen extends JFrame {
 		});
 		mntmThresholdrange.setMnemonic('r');
 		mnLab.add(mntmThresholdrange);
+		
+		mntmStretch = new JMenuItem("Stretch");
+		mntmStretch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+				outputBuff = stretchToRange(firstInputBuff);
+				panelOutputPic.setInternalImage(outputBuff);
+				}
+				catch (IllegalArgumentException e) {
+					JOptionPane.showMessageDialog(null, e.getMessage());
+				}
+				notifyHistWindow();
+			}
+		});
+		mntmStretch.setMnemonic('s');
+		mnLab.add(mntmStretch);
 		
 		panelFirstInputPic = new PicturePanel(null);
 		panelSecondInputPic = new PicturePanel(null);
@@ -220,7 +237,7 @@ public class MainScreen extends JFrame {
 		histWindowSingleton = new HistWindow(firstInputBuff, secondInputBuff, outputBuff);
 		histWindowSingleton.setVisible(false);
 		
-		histButton = new JButton("Histogramy");
+		histButton = new JButton("Hist");
 		histButton.setMnemonic('h');
 		histButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -234,7 +251,7 @@ public class MainScreen extends JFrame {
 		MainScreenMainPanel.add(toolsPanel);
 		toolsPanel.setAlignmentX(LEFT_ALIGNMENT);
 		
-		btnZamieNaCzb = new JButton("Zamień na cz-b");
+		btnZamieNaCzb = new JButton("Change2BW");
 		btnZamieNaCzb.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				BufferedImage tmpImg;
@@ -244,7 +261,6 @@ public class MainScreen extends JFrame {
 		             // convert the original colored image to grayscale
 		            // ColorConvertOp op = new ColorConvertOp(firstInputBuff.getColorModel().getColorSpace(), tmpImg.getColorModel().getColorSpace(),null);
 		            // op.filter(firstInputBuff,tmpImg);
-		             JOptionPane.showMessageDialog(null, "# of bands (gs?): " + tmpImg.getRaster().getNumBands() + " data type= " + tmpImg.getSampleModel().getNumBands());
 					
 					
 					firstInputBuff=tmpImg;
@@ -311,11 +327,17 @@ public class MainScreen extends JFrame {
             File file = fileChooser.getSelectedFile();
             System.out.println("Otwieranie pliku" + file.toString());
             if (panelEnum==PicturePanelAsEnum.INPUT_1) { 
-            	firstInputBuff = ImageIO.read(file);
+            	BufferedImage tempImage = ImageIO.read(file);
+            	firstInputBuff = getEmptyLinearImage(tempImage.getWidth(), tempImage.getHeight(), tempImage.getType()==BufferedImage.TYPE_BYTE_GRAY ? ImageType.GRAYSCALE : ImageType.RGB_LINEAR);
+            	firstInputBuff.getGraphics().drawImage(tempImage, 0, 0, null); // workaround to use linear rgb colorspace and strip alpha channel
+            	tempImage=null;
                 whichPanel.setInternalImage(firstInputBuff);
             }
             if (panelEnum==PicturePanelAsEnum.INPUT_2) { 
-            	secondInputBuff = ImageIO.read(file);
+            	BufferedImage tempImage = ImageIO.read(file);
+            	secondInputBuff = getEmptyLinearImage(tempImage.getWidth(), tempImage.getHeight(), tempImage.getType()==BufferedImage.TYPE_BYTE_GRAY ? ImageType.GRAYSCALE : ImageType.RGB_LINEAR);
+            	secondInputBuff.getGraphics().drawImage(tempImage, 0, 0, null); // workaround to use linear rgb colorspace and strip alpha channel
+            	tempImage=null;
                 whichPanel.setInternalImage(secondInputBuff);
             }
             notifyHistWindow();

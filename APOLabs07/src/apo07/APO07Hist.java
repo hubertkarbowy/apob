@@ -110,7 +110,6 @@ public class APO07Hist extends JPanel {
         	 System.out.println("W="+grayScaled.getWidth()+", H="+grayScaled.getHeight());
         	 gg.drawImage(pierwszy, 0, 0, null);
         	 lut = getGrayscaleHist(grayScaled);
-        	 Arrays.stream(lut).forEach(x -> System.out.print(""+x+"*"));
         	 int maxBarHeight = yAxis_endY-yAxis_startY-1;
         	 paintBars(g, lut, xAxis_startX+1, xAxis_startY-1, maxBarHeight);
          }

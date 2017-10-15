@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
+import java.util.function.BiFunction;
 
 import javax.swing.JOptionPane;
 
@@ -80,8 +81,16 @@ public class APO07StaticPointMethods {
 	}
 	
 	public static BufferedImage thresholdRangeImg(BufferedImage im) {
-		BufferedImage ret = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
+		// BufferedImage ret = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
+		BufferedImage ret = getEmptyLinearImage(im);
+		Raster inraster = im.getRaster();
+		WritableRaster outraster = ret.getRaster();
+		int numBands = inraster.getNumBands();
 		int threshold1 = 255; int threshold2 = 255;
+		
+		int[] insample = new int[numBands];
+		int[] outsample = new int[numBands];
+		
 		try {
 			threshold1 = Integer.parseInt(JOptionPane.showInputDialog("Please give threshold MIN: "));
 			if (threshold1<0 | threshold2>255) throw new NumberFormatException();
@@ -97,7 +106,9 @@ public class APO07StaticPointMethods {
 		
 		for (int x=0; x<im.getWidth(); x++) {
 			for (int y=0; y<im.getHeight(); y++) {
-				int rgba = im.getRGB(x, y);
+				// int rgba = im.getRGB(x, y);
+				inraster.getPixel(x, y, insample);
+				for (int band=0; band<numBands; band++) outsample[band] = insample[band]>thresholdMin && col.getRed()<=thresholdMax ? insample[band] : 0
 	               Color col = new Color(rgba, true);
 	               int[] newcol = {0,0,0};
 	               newcol[0] = col.getRed()>=thresholdMin && col.getRed()<=thresholdMax ? col.getRed() : 0;
@@ -111,29 +122,47 @@ public class APO07StaticPointMethods {
 		return ret;
 	}
 	
-	public static BufferedImage reduceGrayscale(BufferedImage im) {
-		BufferedImage ret = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
-		int threshold = 255;
+	public static BufferedImage stretchToRange(BufferedImage im) {
+		BufferedImage ret = getEmptyLinearImage(im);
+		Raster inraster = im.getRaster();
+		WritableRaster outraster = ret.getRaster();
+		
+		int threshold1 = 0; int threshold2 = 255;
 		try {
-			threshold = Integer.parseInt(JOptionPane.showInputDialog("Please give threshold: "));
-			if (threshold<=0 | threshold>255) throw new NumberFormatException();
+			if (im==null) throw new IllegalArgumentException();
+			threshold1 = Integer.parseInt(JOptionPane.showInputDialog("Please give stretch MIN: "));
+			if (threshold1<0 | threshold2>255) throw new NumberFormatException();
+			threshold2 = Integer.parseInt(JOptionPane.showInputDialog("Please give stretch MAX: "));
+			if (threshold2<0 | threshold2>255) throw new NumberFormatException();
 		}
 		catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(null, "Please enter a value in the range 1-255");
+			JOptionPane.showMessageDialog(null, "Please enter a value in the range 0-255");
 			return null;
 		}
+		int thresholdMin = Math.min(threshold1, threshold2);
+		int thresholdMax = Math.max(threshold1, threshold2);
+		int numBands = im.getRaster().getNumBands();
+		int[] insample = new int[numBands];
+		int[] outsample = new int[numBands];
+		TriFunction<Integer, Integer, Integer, Integer> stretchFunction = (p,p1,p2) -> {
+			if (p<=p1 || p>p2) return 0;
+			else return ((p-p1)*256)/(p2-p1);
+		};
 		
 		for (int x=0; x<im.getWidth(); x++) {
 			for (int y=0; y<im.getHeight(); y++) {
-				int rgba = im.getRGB(x, y);
-	               Color col = new Color(rgba, true);
-	               int[] newcol = {0,0,0};
-	               newcol[0] = col.getRed()>=threshold ? 255 : 0;
-	               newcol[1] = col.getGreen()>=threshold ? 255 : 0;
-	               newcol[2] = col.getBlue()>=threshold ? 255 : 0;
+				// int rgba = im.getRGB(x, y);
+	               inraster.getPixel(x, y, insample);
+				   for (int band=0; band<numBands; band++) outsample[band]= stretchFunction.apply(insample[band], thresholdMin, thresholdMax);
+//	               Color col = new Color(rgba, true);
+//	               int[] newcol = {0,0,0};
+//	               newcol[0] = col.getRed()>=thresholdMin && col.getRed()<=thresholdMax ? col.getRed() : 0;
+//	               newcol[1] = col.getGreen()>=thresholdMin && col.getGreen()<=thresholdMax ? col.getGreen() : 0;
+//	               newcol[2] = col.getBlue()>=thresholdMin && col.getBlue()<=thresholdMax ? col.getBlue() : 0;
 	               
-	               col = new Color(newcol[0], newcol[1], newcol[2]);
-	               ret.setRGB(x, y, col.getRGB());
+//	               col = new Color(newcol[0], newcol[1], newcol[2]);
+//	               ret.setRGB(x, y, col.getRGB());
+				   outraster.setPixel(x, y, outsample);
 			}
 		}
 		return ret;
