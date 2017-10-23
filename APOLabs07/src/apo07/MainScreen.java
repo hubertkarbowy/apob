@@ -58,6 +58,14 @@ public class MainScreen extends JFrame {
 	private JMenuItem mntmThreshold;
 	private JMenuItem mntmThresholdrange;
 	private JMenuItem mntmStretch;
+	private JMenuItem mntmDownsample;
+	private JMenu mnLogical;
+	private JMenuItem mntmAdd;
+	private JMenuItem mntmSubtract;
+	private JMenuItem mntmDiff;
+	private JMenuItem mntmAnd;
+	private JMenuItem mntmOr;
+	private JMenuItem mntmXor;
 	
 	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
 
@@ -210,6 +218,95 @@ public class MainScreen extends JFrame {
 		mntmStretch.setMnemonic('s');
 		mnLab.add(mntmStretch);
 		
+		mntmDownsample = new JMenuItem("Downsample");
+		mntmDownsample.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+					int numLevels = Integer.parseInt(JOptionPane.showInputDialog("Downsample to how many levels (min 2, max 255)?"));
+					if (numLevels<2 || numLevels>255) throw new IllegalArgumentException("Please enter a value 2-255");
+					outputBuff=downsample(firstInputBuff, numLevels);
+					panelOutputPic.setInternalImage(outputBuff);
+				}
+				catch (IllegalArgumentException err) {
+					JOptionPane.showMessageDialog(null, err.getMessage());
+				}
+				finally {notifyHistWindow();}
+			}
+		});
+		mntmDownsample.setMnemonic('d');
+		mnLab.add(mntmDownsample);
+		
+		mnLogical = new JMenu("Arithmetic and logical");
+		mnLogical.setMnemonic('l');
+		mnLab.add(mnLogical);
+		
+		mntmAdd = new JMenuItem("Add");
+		mntmAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				outputBuff=arithmeticOps(firstInputBuff, secondInputBuff, (x,y) -> x+y);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLogical.add(mntmAdd);
+		
+		mntmSubtract = new JMenuItem("Subtract");
+		mntmSubtract.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				outputBuff=arithmeticOps(firstInputBuff, secondInputBuff, (x,y) -> Math.max((x-y),0));
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLogical.add(mntmSubtract);
+
+		mntmDiff = new JMenuItem("Diff");
+		mntmDiff.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				outputBuff=arithmeticOps(firstInputBuff, secondInputBuff, (x,y) -> Math.abs((x-y)));
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLogical.add(mntmDiff);
+		
+		mntmAnd = new JMenuItem("AND");
+		mntmAnd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				outputBuff=arithmeticOps(firstInputBuff, secondInputBuff, (x,y) -> x&y);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLogical.add(mntmAnd);
+		
+		mntmOr = new JMenuItem("OR");
+		mntmOr.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				outputBuff=arithmeticOps(firstInputBuff, secondInputBuff, (x,y) -> x|y);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLogical.add(mntmOr);
+		
+		mntmXor = new JMenuItem("XOR");
+		mntmXor.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				outputBuff=arithmeticOps(firstInputBuff, secondInputBuff, (x,y) -> x^y);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLogical.add(mntmXor);
+		
 		panelFirstInputPic = new PicturePanel(null);
 		panelSecondInputPic = new PicturePanel(null);
 		
@@ -258,11 +355,7 @@ public class MainScreen extends JFrame {
 				if (firstInputBuff!=null) {
 					tmpImg = new BufferedImage(firstInputBuff.getWidth(), firstInputBuff.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 					tmpImg.getGraphics().drawImage(firstInputBuff, 0, 0, null);
-		             // convert the original colored image to grayscale
-		            // ColorConvertOp op = new ColorConvertOp(firstInputBuff.getColorModel().getColorSpace(), tmpImg.getColorModel().getColorSpace(),null);
-		            // op.filter(firstInputBuff,tmpImg);
-					
-					
+
 					firstInputBuff=tmpImg;
 					panelFirstInputPic.setInternalImage(firstInputBuff);
 				}

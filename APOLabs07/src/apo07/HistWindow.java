@@ -14,6 +14,9 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import javax.swing.JCheckBox;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class HistWindow extends JFrame {
 	private APO07Hist Hist1Panel;
@@ -29,6 +32,8 @@ public class HistWindow extends JFrame {
 	private BufferedImage im1;
 	private BufferedImage im2;
 	private BufferedImage imout;
+	private JCheckBox chckbxBez0;
+	private JCheckBox chckbxBez1;
 	
 	
 	public HistWindow() {
@@ -103,8 +108,30 @@ public class HistWindow extends JFrame {
 			}
 		});
 		rightHistChooser.setModel(new DefaultComboBoxModel(new String[] {"Obraz 1", "Obraz 2", "Obraz Wy"}));
-		rightHistChooser.setSelectedIndex(2); // todo: zmienic na out
+		rightHistChooser.setSelectedIndex(2); 
 		rightHistPanel.add(rightHistChooser);
+		
+		chckbxBez0 = new JCheckBox("Bez 0");
+		chckbxBez0.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (chckbxBez0.isSelected()) Hist2Panel.toggleExtremes((byte)0, true);
+				else Hist2Panel.toggleExtremes((byte)0, false);
+				Hist2Panel.repaint();
+				Hist2Panel.revalidate();
+			}
+		});
+		rightHistPanel.add(chckbxBez0);
+		
+		chckbxBez1 = new JCheckBox("Bez 1");
+		chckbxBez1.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (chckbxBez1.isSelected()) Hist2Panel.toggleExtremes((byte)1, true);
+				else Hist2Panel.toggleExtremes((byte)1, false);
+				Hist2Panel.repaint();
+				Hist2Panel.revalidate();
+			}
+		});
+		rightHistPanel.add(chckbxBez1);
 		
 		this.im1=null; this.im2=null; this.imout=null;
 		setLocationRelativeTo(null);

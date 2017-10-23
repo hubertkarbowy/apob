@@ -31,5 +31,20 @@ public class APO07StaticUtilityMethods {
 		if (im.getType()==BufferedImage.TYPE_BYTE_GRAY) return getEmptyLinearImage(im.getWidth(), im.getHeight(), ImageType.GRAYSCALE);
 		else return getEmptyLinearImage(im.getWidth(), im.getHeight(), ImageType.RGB_LINEAR);
 	}
+	
+	public static int tv(int inV) { // cuts off extreme values in saturated images
+		if (inV<0) return 0;
+		else if (inV>255) return 255;
+		else return inV;
+	}
+	
+	public static BufferedImage getMaximalOfTwo(BufferedImage im1, BufferedImage im2) {
+		ColorSpace csm = ColorSpace.getInstance( im1.getType() == BufferedImage.TYPE_BYTE_GRAY ? ColorSpace.CS_GRAY : ColorSpace.CS_LINEAR_RGB);
+		ComponentColorModel cm = new ComponentColorModel(csm, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+		WritableRaster raster = cm.createCompatibleWritableRaster(Math.max(im1.getWidth(), im2.getWidth()), Math.max(im1.getHeight(), im2.getHeight()));
+		BufferedImage ret = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
+		return ret;
+	}
+	
 
 }

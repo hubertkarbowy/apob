@@ -1,11 +1,17 @@
 package apo07;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
+import java.util.Arrays;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 import static apo07.APO07StaticUtilityMethods.*;
@@ -24,28 +30,6 @@ public class APO07StaticPointMethods {
 				for (int y=0; y<im.getHeight(); y++) {
 					inraster.getPixel(x, y, insample);
 					for (int component=0; component<insample.length; component++) {outsample[component] = 255-insample[component];}
-//					int rgba = im.getRGB(x, y);
-//					int pixelValue;
-//	                Color col = new Color(rgba, true);
-//	                if (im.getType()==BufferedImage.TYPE_BYTE_GRAY)
-//	                {
-//	                	WritableRaster wr = im.getRaster();
-//	                	int aa[] = new int[1];
-//	                	wr.getPixel(x, y, aa);
-//	                	pixelValue = 255 - aa[0];
-//	                	
-//	                }
-	              //  else {
-//	                col = new Color(255 - col.getRed(),
-//	                                0,0);
-//	                pixelValue = col.getRGB();
-//	              //  }
-	                //ret.setRGB(x, y, pixelValue);
-					
-//                	int oldPV = im.getRaster().getSample(x, y, 0);
-//                	if (x % 10 == 0 ) System.out.println(oldPV + "*");
-//                	int pixelValue = 255 - oldPV;
-//                	ret.getRaster().setSample(x, y, 0, pixelValue);
 					outraster.setPixel(x, y, outsample);
 				}
 			}
@@ -53,7 +37,12 @@ public class APO07StaticPointMethods {
 	}
 	
 	public static BufferedImage thresholdImg(BufferedImage im) {
-		BufferedImage ret = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
+		BufferedImage ret = getEmptyLinearImage(im);
+		Raster inraster = im.getRaster();
+		WritableRaster outraster = ret.getRaster();
+		int numBands = inraster.getNumBands();
+		int[] insample = new int[numBands]; int[] outsample = new int[numBands]; 
+		
 		int threshold = 255;
 		try {
 			threshold = Integer.parseInt(JOptionPane.showInputDialog("Please give threshold: "));
@@ -66,22 +55,15 @@ public class APO07StaticPointMethods {
 		
 		for (int x=0; x<im.getWidth(); x++) {
 			for (int y=0; y<im.getHeight(); y++) {
-				int rgba = im.getRGB(x, y);
-	               Color col = new Color(rgba, true);
-	               int[] newcol = {0,0,0};
-	               newcol[0] = col.getRed()>=threshold ? 255 : 0;
-	               newcol[1] = col.getGreen()>=threshold ? 255 : 0;
-	               newcol[2] = col.getBlue()>=threshold ? 255 : 0;
-	               
-	               col = new Color(newcol[0], newcol[1], newcol[2]);
-	               ret.setRGB(x, y, col.getRGB());
+				inraster.getPixel(x, y, insample);
+				for (int band=0; band<numBands; band++) outsample[band] = insample[band] >= threshold ? 255 : 0;
+				outraster.setPixel(x, y, outsample);
 			}
 		}
 		return ret;
 	}
 	
 	public static BufferedImage thresholdRangeImg(BufferedImage im) {
-		// BufferedImage ret = new BufferedImage(im.getWidth(), im.getHeight(), im.getType());
 		BufferedImage ret = getEmptyLinearImage(im);
 		Raster inraster = im.getRaster();
 		WritableRaster outraster = ret.getRaster();
@@ -108,15 +90,8 @@ public class APO07StaticPointMethods {
 			for (int y=0; y<im.getHeight(); y++) {
 				// int rgba = im.getRGB(x, y);
 				inraster.getPixel(x, y, insample);
-				for (int band=0; band<numBands; band++) outsample[band] = insample[band]>thresholdMin && col.getRed()<=thresholdMax ? insample[band] : 0
-	               Color col = new Color(rgba, true);
-	               int[] newcol = {0,0,0};
-	               newcol[0] = col.getRed()>=thresholdMin && col.getRed()<=thresholdMax ? col.getRed() : 0;
-	               newcol[1] = col.getGreen()>=thresholdMin && col.getGreen()<=thresholdMax ? col.getGreen() : 0;
-	               newcol[2] = col.getBlue()>=thresholdMin && col.getBlue()<=thresholdMax ? col.getBlue() : 0;
-	               
-	               col = new Color(newcol[0], newcol[1], newcol[2]);
-	               ret.setRGB(x, y, col.getRGB());
+				for (int band=0; band<numBands; band++) outsample[band] = insample[band]>thresholdMin && insample[band]<=thresholdMax ? insample[band] : 0;
+				outraster.setPixel(x,y, outsample);
 			}
 		}
 		return ret;
@@ -151,19 +126,52 @@ public class APO07StaticPointMethods {
 		
 		for (int x=0; x<im.getWidth(); x++) {
 			for (int y=0; y<im.getHeight(); y++) {
-				// int rgba = im.getRGB(x, y);
-	               inraster.getPixel(x, y, insample);
+				   inraster.getPixel(x, y, insample);
 				   for (int band=0; band<numBands; band++) outsample[band]= stretchFunction.apply(insample[band], thresholdMin, thresholdMax);
-//	               Color col = new Color(rgba, true);
-//	               int[] newcol = {0,0,0};
-//	               newcol[0] = col.getRed()>=thresholdMin && col.getRed()<=thresholdMax ? col.getRed() : 0;
-//	               newcol[1] = col.getGreen()>=thresholdMin && col.getGreen()<=thresholdMax ? col.getGreen() : 0;
-//	               newcol[2] = col.getBlue()>=thresholdMin && col.getBlue()<=thresholdMax ? col.getBlue() : 0;
-	               
-//	               col = new Color(newcol[0], newcol[1], newcol[2]);
-//	               ret.setRGB(x, y, col.getRGB());
 				   outraster.setPixel(x, y, outsample);
 			}
+		}
+		return ret;
+	}
+	
+	public static BufferedImage downsample(BufferedImage im, int numLevels) {
+		BufferedImage ret = getEmptyLinearImage(im);
+		Raster inraster = im.getRaster();
+		WritableRaster outraster = ret.getRaster();
+		int numBands = im.getRaster().getNumBands();
+		int[] insample = new int[numBands];
+		int[] outsample = new int[numBands];
+		
+		float step = (float)256/(numLevels);
+		
+		UnaryOperator<Integer> fitIntoBands = (p) -> {float temp=Math.round(p/step); return Math.round(temp*step);};
+		for (int x=0; x<im.getWidth(); x++) {
+			for (int y=0; y<im.getHeight(); y++) {
+				   inraster.getPixel(x, y, insample);
+				   for (int band=0; band<numBands; band++) outsample[band]=fitIntoBands.apply(insample[band]);
+				   outraster.setPixel(x, y, outsample);
+			}
+		}
+		return ret;
+	}
+	
+	public static BufferedImage arithmeticOps(BufferedImage im, BufferedImage im2, BiFunction<Integer, Integer, Integer> aluOp) {
+		BufferedImage newim1 = getMaximalOfTwo(im, im2);
+		BufferedImage newim2 = getMaximalOfTwo(im, im2);
+		BufferedImage ret = getMaximalOfTwo(im, im2);
+		
+		WritableRaster inraster = newim1.getRaster(); inraster.setRect(im.getRaster());
+		WritableRaster inraster2 = newim2.getRaster(); inraster2.setRect(im2.getRaster());
+		WritableRaster outraster = ret.getRaster();
+		
+		int numBands = im.getRaster().getNumBands();
+		
+		for (int b=0; b<numBands; b++) {
+			int[] insample1 = inraster.getSamples(0, 0, newim1.getWidth()-1, newim1.getHeight()-1, b, (int[]) null);
+			int[] insample2 = inraster2.getSamples(0, 0, newim2.getWidth()-1, newim2.getHeight()-1, b, (int[]) null);
+			int[] outsample = outraster.getSamples(0, 0, ret.getWidth()-1, ret.getHeight()-1, b, (int[]) null);
+			for (int i=0; i<insample1.length; i++) outsample[i]=tv(aluOp.apply(insample1[i], insample2[i]));
+			outraster.setSamples(0, 0, ret.getWidth()-1, ret.getHeight()-1, b, outsample);
 		}
 		return ret;
 	}

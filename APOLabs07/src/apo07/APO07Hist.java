@@ -26,6 +26,8 @@ public class APO07Hist extends JPanel {
     		super(msg);
     	}
     }
+    boolean noZero = false;
+    boolean noMax = false;
     
     // CONSTRUCTORS
     
@@ -138,12 +140,18 @@ public class APO07Hist extends JPanel {
     	g2.fillPolygon(triangle_coordinatesX, triangle_coordinatesY, 3);
     }
     
+    public void toggleExtremes(byte which, boolean state) {
+    	if (which==0) noZero = state ? true : false;
+    	if (which==1) noMax = state ? true : false;
+    }
+    
     private void paintBars(Graphics g, int[] lut, int xAxis_startX, int xAxis_startY, int maxBarHeight) // drawing values from 0 to 255, the bar width is 2 pixels per value
     {
     	try {
-	    	int lutMaxValue = Arrays.stream(lut).max().orElseThrow(() -> new APO07Hist.HistogramPaintException("Unable to paint histogram. Wish I knew why..."));
+    		int[] copyOfLut = Arrays.copyOfRange(lut, noZero ? 1 : 0, noMax ? lut.length-2 : lut.length-1);
+	    	int lutMaxValue = Arrays.stream(copyOfLut).max().orElseThrow(() -> new APO07Hist.HistogramPaintException("Unable to paint histogram. Wish I knew why..."));
 	    	g.setColor(Color.PINK);	    	
-	    	for (int x=0; x<=255; x++) {
+	    	for (int x=(noZero?1:0); x<=(noMax?254:255); x++) {
 	    		int barHeight = Math.round(((float)lut[x]/lutMaxValue)*Math.abs(maxBarHeight));
 	    		g.fillRect(xAxis_startX+(2*x), xAxis_startY-barHeight, 2, barHeight);
 	    	}
