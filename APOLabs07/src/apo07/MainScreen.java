@@ -66,6 +66,8 @@ public class MainScreen extends JFrame {
 	private JMenuItem mntmAnd;
 	private JMenuItem mntmOr;
 	private JMenuItem mntmXor;
+	private JMenu mnLab_1;
+	private JMenuItem mntmSmoothing;
 	
 	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
 
@@ -306,6 +308,19 @@ public class MainScreen extends JFrame {
 			}
 		});
 		mnLogical.add(mntmXor);
+		
+		mnLab_1 = new JMenu("Lab 3");
+		menuBar.add(mnLab_1);
+		
+		mntmSmoothing = new JMenuItem("Smoothing");
+		mntmSmoothing.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				APO07MaskInput.OpObject[] params = getSmoothing(OpType.SMOOTHING);
+				APO07MaskInput newWindow = new APO07MaskInput(params);
+				newWindow.setVisible(true);
+			}
+		});
+		mnLab_1.add(mntmSmoothing);
 		
 		panelFirstInputPic = new PicturePanel(null);
 		panelSecondInputPic = new PicturePanel(null);

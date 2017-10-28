@@ -11,6 +11,15 @@ enum ImageType {
 	GRAYSCALE, RGB_LINEAR
 }
 
+enum MaskType {
+	_3x3, _5x5, _3x5, _5x3, _7x7;
+}
+
+enum OpType {
+	SMOOTHING, SHARPEN, EDGE_DETECT, WHATEVER;
+}
+
+
 public class APO07StaticUtilityMethods {
 	
 	public interface TriFunction<A, B, C, R> {
@@ -45,6 +54,19 @@ public class APO07StaticUtilityMethods {
 		BufferedImage ret = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
 		return ret;
 	}
+	
+	public static APO07MaskInput.OpObject[] getSmoothing(OpType opSet) {
+		
+		if (opSet==OpType.SMOOTHING) {
+			APO07MaskInput.OpObject smoothen1 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,1,1,1,1,1,1,1,1}, 1);
+			APO07MaskInput.OpObject smoothen2 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,1,1,1,2,1,1,1,1}, 1);
+			APO07MaskInput.OpObject smoothen3 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,2,1,2,4,2,1,2,1}, 1);
+			APO07MaskInput.OpObject[] table = {smoothen1, smoothen2, smoothen3};
+			return table;
+		}
+		else return null;
+	}
+	//	protected OpObject (MaskType maskType, int[] maskValues, int edgePixels)
 	
 
 }
