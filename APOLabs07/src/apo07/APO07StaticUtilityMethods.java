@@ -19,6 +19,10 @@ enum OpType {
 	SMOOTHING, SHARPEN, EDGE_DETECT, WHATEVER;
 }
 
+enum ScaleMethod {
+	NOCHANGE, COPY, SCALE1, SCALE2, SCALE3;
+}
+
 
 public class APO07StaticUtilityMethods {
 	
@@ -55,18 +59,21 @@ public class APO07StaticUtilityMethods {
 		return ret;
 	}
 	
-	public static APO07MaskInput.OpObject[] getSmoothing(OpType opSet) {
+	public static APO07MaskInput.OpObject[] getMask(OpType opSet) {
 		
 		if (opSet==OpType.SMOOTHING) {
-			APO07MaskInput.OpObject smoothen1 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,1,1,1,1,1,1,1,1}, 1);
-			APO07MaskInput.OpObject smoothen2 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,1,1,1,2,1,1,1,1}, 1);
-			APO07MaskInput.OpObject smoothen3 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,2,1,2,4,2,1,2,1}, 1);
+			APO07MaskInput.OpObject smoothen1 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,1,1,1,1,1,1,1,1}, 1, "3x3 smoothing [1]");
+			APO07MaskInput.OpObject smoothen2 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,1,1,1,2,1,1,1,1}, 1, "3x3 smoothing [2]");
+			APO07MaskInput.OpObject smoothen3 = new APO07MaskInput.OpObject(MaskType._3x3, new int[] {1,2,1,2,4,2,1,2,1}, 1, "3x3 smoothing [3]");
 			APO07MaskInput.OpObject[] table = {smoothen1, smoothen2, smoothen3};
 			return table;
 		}
 		else return null;
 	}
-	//	protected OpObject (MaskType maskType, int[] maskValues, int edgePixels)
+	
+	public static BufferedImage applyMask (BufferedImage inputPic, APO07MaskInput.OpObject op, ScaleMethod sm) {
+		return null;
+	}
 	
 
 }

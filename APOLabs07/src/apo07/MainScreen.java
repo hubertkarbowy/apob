@@ -190,7 +190,7 @@ public class MainScreen extends JFrame {
 				}
 			}
 		});
-		mntmThreshold.setMnemonic('t');
+		mntmThreshold.setMnemonic('t');if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
 		mnLab.add(mntmThreshold);
 		
 		mntmThresholdrange = new JMenuItem("Threshold (range)");
@@ -310,14 +310,17 @@ public class MainScreen extends JFrame {
 		mnLogical.add(mntmXor);
 		
 		mnLab_1 = new JMenu("Lab 3");
+		mnLab_1.setMnemonic('3');
 		menuBar.add(mnLab_1);
 		
 		mntmSmoothing = new JMenuItem("Smoothing");
 		mntmSmoothing.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				APO07MaskInput.OpObject[] params = getSmoothing(OpType.SMOOTHING);
+				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				APO07MaskInput.OpObject[] params = getMask(OpType.SMOOTHING);
 				APO07MaskInput newWindow = new APO07MaskInput(params);
 				newWindow.setVisible(true);
+				notifyHistWindow();
 			}
 		});
 		mnLab_1.add(mntmSmoothing);
@@ -465,5 +468,9 @@ public class MainScreen extends JFrame {
 	
 	private void notifyHistWindow() {
 		histWindowSingleton.updateHistograms(firstInputBuff, secondInputBuff, outputBuff);
+	}
+	
+	protected BufferedImage getFirst() {
+		return firstInputBuff;
 	}
 }

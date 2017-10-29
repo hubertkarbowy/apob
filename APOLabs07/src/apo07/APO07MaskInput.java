@@ -2,13 +2,18 @@ package apo07;
 
 import javax.swing.JFrame;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
+
 import java.awt.Dimension;
 import java.util.Arrays;
 
 import javax.swing.JRadioButton;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -19,7 +24,7 @@ import java.awt.event.ActionEvent;
  * 
  */
 
-public class APO07MaskInput extends JFrame {
+public class APO07MaskInput extends JDialog {
 	private JTextField xmin3ymin3;
 	private JTextField xmin2ymin3;
 	private JTextField xmin1ymin3;
@@ -70,33 +75,47 @@ public class APO07MaskInput extends JFrame {
 	private JTextField xplus2yplus3;
 	private JTextField xplus3yplus3;
 	
-	private JTextField[] outerRing = {xmin3ymin3, xmin2ymin3, xmin1ymin3, xymin3, xplus1ymin3, xplus2ymin3, xplus3ymin3, xmin3ymin2, xmin3ymin2, xplus3ymin2, xmin3ymin1, xplus3ymin1, xmin3y, xplus3y, xmin3yplus1, xplus3yplus1, xmin3yplus2, xplus3yplus2, xmin3yplus3, xmin2yplus3, xmin1yplus3, xyplus3, xplus1yplus3, xplus2yplus3, xplus3yplus3};
-	private JTextField[] innerRing = {xmin2ymin2, xmin1ymin2, xymin2, xplus1ymin2, xplus2ymin2, xmin2ymin1, xplus2ymin1, xmin2y, xplus2y, xmin2yplus1, xplus2yplus1, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2};
-	private JTextField[] fiveOnThree = {xmin2ymin1, xmin1ymin1, xymin1, xplus1ymin1, xplus2ymin1, xmin2y, xplus2y, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2};
-	private JTextField[] threeOnFive = {xmin1ymin2, xymin2, xplus1ymin2, xmin1yplus2, xyplus2, xplus1yplus2};
+	private JTextField[] outerRing;
+	private JTextField[] innerRing;
+	private JTextField[] everyRing;
+	private JTextField[] fiveOnThree;
+	private JTextField[] threeOnFive;
 	
 	private OpObject[] operations;
 	int mask1[]; int mask2[]; int[] mask3; int[] mask4;
- private JRadioButton rdbtnOp;
- private JRadioButton rdbtnOp_1;
- private JRadioButton rdbtnOp_2;
- private JRadioButton rdbtnOp_3;
+	private JRadioButton rdbtnOp;
+	private JRadioButton rdbtnOp_1;
+	private JRadioButton rdbtnOp_2;
+	private JRadioButton rdbtnOp_3;
+	private ButtonGroup radioCollection;
+	
+	private JRadioButton rdbtnDontChangeEdge;
+	private JRadioButton rdbtnCopy;
+	private JRadioButton rdbtnScale1;
+	private JRadioButton rdbtnScale2;
+	private JRadioButton rdbtnScale3;
+	private JButton btnOk;
+	private JButton btnCancel;
+	private ButtonGroup scaleCollection;
 	
 	static class OpObject {
 		MaskType maskType;
 		int[] maskValues;
 		int edgePixels;
+		String label;
 		
-		protected OpObject (MaskType maskType, int[] maskValues, int edgePixels)
+		protected OpObject (MaskType maskType, int[] maskValues, int edgePixels, String label)
 		// protected OpObject (int[] maskValues, boolean[] edgePixels)
 		{
 			this.maskType = maskType;
 			this.maskValues=maskValues;
 			this.edgePixels=edgePixels;
+			this.label=label;
 		}
 	}
 	
 	public APO07MaskInput() {
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setMinimumSize(new Dimension(740, 360));
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 		
@@ -108,23 +127,42 @@ public class APO07MaskInput extends JFrame {
 		optsPanel.setLayout(null);
 		
 		rdbtnOp = new JRadioButton("Op1");
+		rdbtnOp.setVisible(false);
 		rdbtnOp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				setMask(operations[0].maskType);
+				setMask(operations[0].maskType, operations[0]);
 			}
 		});
 		rdbtnOp.setBounds(30, 26, 149, 23);
 		optsPanel.add(rdbtnOp);
 		
 		rdbtnOp_1 = new JRadioButton("Op2");
+		rdbtnOp_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				setMask(operations[1].maskType, operations[1]);
+			}
+		});
+		rdbtnOp_1.setVisible(false);
 		rdbtnOp_1.setBounds(30, 53, 149, 23);
 		optsPanel.add(rdbtnOp_1);
 		
 		rdbtnOp_2 = new JRadioButton("Op3");
+		rdbtnOp_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				setMask(operations[2].maskType, operations[2]);
+			}
+		});
+		rdbtnOp_2.setVisible(false);
 		rdbtnOp_2.setBounds(30, 80, 149, 23);
 		optsPanel.add(rdbtnOp_2);
 		
 		rdbtnOp_3 = new JRadioButton("Op4");
+		rdbtnOp_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				setMask(operations[3].maskType, operations[3]);
+			}
+		});
+		rdbtnOp_3.setVisible(false);
 		rdbtnOp_3.setBounds(30, 106, 149, 23);
 		optsPanel.add(rdbtnOp_3);
 		
@@ -377,33 +415,49 @@ public class APO07MaskInput extends JFrame {
 		xplus3yplus3.setBounds(375, 218, 49, 19);
 		maskPanel.add(xplus3yplus3);
 		
-		JRadioButton rdbtnDontChangeEdge = new JRadioButton("No change");
+		rdbtnDontChangeEdge = new JRadioButton("No change");
+		rdbtnDontChangeEdge.setSelected(true);
 		rdbtnDontChangeEdge.setBounds(22, 245, 107, 23);
 		maskPanel.add(rdbtnDontChangeEdge);
 		
-		JRadioButton rdbtnCopy = new JRadioButton("Copy");
+		rdbtnCopy = new JRadioButton("Copy");
 		rdbtnCopy.setBounds(134, 245, 107, 23);
 		maskPanel.add(rdbtnCopy);
 		
-		JRadioButton rdbtnScale = new JRadioButton("Scale 1");
-		rdbtnScale.setBounds(22, 265, 96, 23);
-		maskPanel.add(rdbtnScale);
+		rdbtnScale1 = new JRadioButton("Scale 1");
+		rdbtnScale1.setBounds(22, 265, 96, 23);
+		maskPanel.add(rdbtnScale1);
 		
-		JRadioButton rdbtnScale_1 = new JRadioButton("Scale 2");
-		rdbtnScale_1.setBounds(134, 265, 96, 23);
-		maskPanel.add(rdbtnScale_1);
+		rdbtnScale2 = new JRadioButton("Scale 2");
+		rdbtnScale2.setBounds(134, 265, 96, 23);
+		maskPanel.add(rdbtnScale2);
 		
-		JRadioButton rdbtnScale_2 = new JRadioButton("Scale 3");
-		rdbtnScale_2.setBounds(230, 265, 96, 23);
-		maskPanel.add(rdbtnScale_2);
+		rdbtnScale3 = new JRadioButton("Scale 3");
+		rdbtnScale3.setBounds(230, 265, 96, 23);
+		maskPanel.add(rdbtnScale3);
 		
-		JButton btnOk = new JButton("OK");
+		btnOk = new JButton("OK");
 		btnOk.setBounds(342, 249, 117, 25);
 		maskPanel.add(btnOk);
 		
-		JButton btnCancel = new JButton("Cancel");
+		btnCancel = new JButton("Cancel");
 		btnCancel.setBounds(342, 286, 117, 25);
 		maskPanel.add(btnCancel);
+		
+		everyRing = new JTextField[] {xmin3ymin3, xmin2ymin3, xmin1ymin3, xymin3, xplus1ymin3, xplus2ymin3, xplus3ymin3, xmin3ymin2, xmin2ymin2, xmin1ymin2, xymin2, xplus1ymin2, xplus2ymin2, xplus3ymin2, xmin3ymin1, xmin2ymin1, xmin1ymin1, xymin1, xplus1ymin1, xplus2ymin1, xplus3ymin1, xmin3y, xmin2y, xmin1y, xy, xplus1y, xplus2y, xplus3y, xmin3yplus1, xmin2yplus1, xmin1yplus1, xyplus1, xplus1yplus1, xplus2yplus1, xplus3yplus1, xmin3yplus2, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2, xplus3yplus2, xmin3yplus3, xmin2yplus3, xmin1yplus3, xyplus3, xplus1yplus3, xplus2yplus3, xplus3yplus3};
+		outerRing = new JTextField[] {xmin3ymin3, xmin2ymin3, xmin1ymin3, xymin3, xplus1ymin3, xplus2ymin3, xplus3ymin3, xmin3ymin2, xmin3ymin2, xplus3ymin2, xmin3ymin1, xplus3ymin1, xmin3y, xplus3y, xmin3yplus1, xplus3yplus1, xmin3yplus2, xplus3yplus2, xmin3yplus3, xmin2yplus3, xmin1yplus3, xyplus3, xplus1yplus3, xplus2yplus3, xplus3yplus3};
+		innerRing = new JTextField[] {xmin2ymin2, xmin1ymin2, xymin2, xplus1ymin2, xplus2ymin2, xmin2ymin1, xplus2ymin1, xmin2y, xplus2y, xmin2yplus1, xplus2yplus1, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2};
+		fiveOnThree = new JTextField[] {xmin2ymin1, xmin1ymin1, xymin1, xplus1ymin1, xplus2ymin1, xmin2y, xplus2y, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2};
+		threeOnFive = new JTextField[] {xmin1ymin2, xymin2, xplus1ymin2, xmin1yplus2, xyplus2, xplus1yplus2};
+		radioCollection = new ButtonGroup();
+		radioCollection.add(rdbtnOp);
+		radioCollection.add(rdbtnOp_1);
+		radioCollection.add(rdbtnOp_2);
+		radioCollection.add(rdbtnOp_3);
+		
+		scaleCollection = new ButtonGroup();
+		scaleCollection.add(rdbtnDontChangeEdge); scaleCollection.add(rdbtnCopy);
+		scaleCollection.add(rdbtnScale1); scaleCollection.add(rdbtnScale2); scaleCollection.add(rdbtnScale3);
 		
 	}
 	
@@ -412,24 +466,27 @@ public class APO07MaskInput extends JFrame {
 		this.operations = operations;
 		System.out.println ("OpLEn= " + operations.length);
 	//	this.mask1=mask1; this.mask2=mask2; this.mask3=mask3; this.mask4=mask4;
-		if (operations.length==3) {
-			rdbtnOp_3.setVisible(false);
-		}
-		if (operations.length==2) {rdbtnOp_3.setVisible(false); rdbtnOp_2.setVisible(false);}
-		if (operations.length==1) {rdbtnOp_3.setVisible(false); rdbtnOp_2.setVisible(false); rdbtnOp_1.setVisible(false);} 		
+		for (int oplength=0; oplength<operations.length; oplength++) {
+			if (oplength==0) {rdbtnOp.setVisible(true); rdbtnOp.setText(operations[0].label);}
+			if (oplength==1) {rdbtnOp_1.setVisible(true); rdbtnOp_1.setText(operations[1].label);}
+			if (oplength==2) {rdbtnOp_2.setVisible(true); rdbtnOp_2.setText(operations[2].label);}
+			if (oplength==3) {rdbtnOp_3.setVisible(true); rdbtnOp_3.setText(operations[3].label);}
+			
+		} 		
 	}
 	
-	private void setMask (MaskType maskType) {
+	private void setMask (MaskType maskType, OpObject op) {
+		Arrays.stream(everyRing).forEach(x -> {x.setText("0"); x.setVisible(true);});
 		if (maskType == MaskType._3x3) {
-			JTextField[] everyRing = {xmin3ymin3, xmin2ymin3, xmin1ymin3, xymin3, xplus1ymin3, xplus2ymin3, xplus3ymin3, xmin3ymin2, xmin2ymin2, xmin1ymin2, xymin2, xplus1ymin2, xplus2ymin2, xplus3ymin2, xmin3ymin1, xmin2ymin1, xmin1ymin1, xymin1, xplus1ymin1, xplus2ymin1, xplus3ymin1, xmin3y, xmin2y, xmin1y, xy, xplus1y, xplus2y, xplus3y, xmin3yplus1, xmin2yplus1, xmin1yplus1, xyplus1, xplus1yplus1, xplus2yplus1, xplus3yplus1, xmin3yplus2, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2, xplus3yplus2, xmin3yplus3, xmin2yplus3, xmin1yplus3, xyplus3, xplus1yplus3, xplus2yplus3, xplus3yplus3};
-			JTextField[] outerRing = {xmin3ymin3, xmin2ymin3, xmin1ymin3, xymin3, xplus1ymin3, xplus2ymin3, xplus3ymin3, xmin3ymin2, xmin3ymin2, xplus3ymin2, xmin3ymin1, xplus3ymin1, xmin3y, xplus3y, xmin3yplus1, xplus3yplus1, xmin3yplus2, xplus3yplus2, xmin3yplus3, xmin2yplus3, xmin1yplus3, xyplus3, xplus1yplus3, xplus2yplus3, xplus3yplus3};
-			JTextField[] innerRing = {xmin2ymin2, xmin1ymin2, xymin2, xplus1ymin2, xplus2ymin2, xmin2ymin1, xplus2ymin1, xmin2y, xplus2y, xmin2yplus1, xplus2yplus1, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2};
-			JTextField[] fiveOnThree = {xmin2ymin1, xmin1ymin1, xymin1, xplus1ymin1, xplus2ymin1, xmin2y, xplus2y, xmin2yplus2, xmin1yplus2, xyplus2, xplus1yplus2, xplus2yplus2};
-			JTextField[] threeOnFive = {xmin1ymin2, xymin2, xplus1ymin2, xmin1yplus2, xyplus2, xplus1yplus2};
-			
-			Arrays.stream(everyRing).forEach(x -> x.setVisible(true));
-			Arrays.stream(outerRing).forEach(x -> x.setVisible(false));
-			Arrays.stream(innerRing).forEach(x -> x.setVisible(false));
+			Arrays.stream(outerRing).forEach(x -> {x.setText("0"); x.setVisible(false);});
+			Arrays.stream(innerRing).forEach(x -> {x.setText("0"); x.setVisible(false);});
 		}
+		if (op!=null) {
+			if (maskType == MaskType._3x3) {
+				xmin1ymin1.setText(""+op.maskValues[0]); xymin1.setText(""+op.maskValues[1]); xplus1ymin1.setText(""+op.maskValues[2]);
+				xmin1y.setText(""+op.maskValues[3]); xy.setText(""+op.maskValues[4]); xplus1y.setText(""+op.maskValues[5]);
+				xmin1yplus1.setText(""+op.maskValues[6]); xyplus1.setText(""+op.maskValues[7]); xplus1yplus1.setText(""+op.maskValues[8]);
+			}
+		}		
 	}
 }
