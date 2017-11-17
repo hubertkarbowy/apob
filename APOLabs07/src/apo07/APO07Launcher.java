@@ -10,9 +10,9 @@ class APO07Launcher {
 		System.out.println("Hello Mr Doros.");
 //		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 //			@Override
-	//		public void uncaughtException(Thread t, Throwable e) {
-		//		JOptionPane.showMessageDialog(null, e.getMessage());
-			//}
+//			public void uncaughtException(Thread t, Throwable e) {
+//				JOptionPane.showMessageDialog(null, e.getMessage());
+//			}
 //		});
 		new MainScreen().setVisible(true);
 	}

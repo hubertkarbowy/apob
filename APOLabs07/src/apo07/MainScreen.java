@@ -19,6 +19,7 @@ import java.awt.image.*;
 
 import static apo07.APO07StaticPointMethods.*;
 import static apo07.APO07StaticUtilityMethods.*;
+import static apo07.APO07NeighborhoodMethods.*;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -32,9 +33,9 @@ public class MainScreen extends JFrame {
 	private JMenuItem mnOpenPic1;
 	private JMenuItem mnOpenPic2;
 	
-	private BufferedImage firstInputBuff;
-	private BufferedImage secondInputBuff;
-	private BufferedImage outputBuff;
+	protected BufferedImage firstInputBuff;
+	protected BufferedImage secondInputBuff;
+	protected BufferedImage outputBuff;
 	
 	private JScrollPane panelFirstInputScrollPane;
 	private JScrollPane panelSecondInputScrollPane;
@@ -70,6 +71,22 @@ public class MainScreen extends JFrame {
 	private JMenuItem mntmSmoothing;
 	
 	private enum PicturePanelAsEnum {INPUT_1, INPUT_2, OUTPUT};
+	
+	protected MainScreen ms = this;
+	private JMenuItem mntmLaplace;
+	private JMenuItem mntmEdgeDetect;
+	private JMenu mnMedianFiltering;
+	private JMenuItem mntmx;
+	private JMenuItem mntmx_1;
+	private JMenuItem mntmx_2;
+	private JMenuItem mntmx_3;
+	private JMenuItem mntmNewMenuItem;
+	private JMenu mnLogicalFiltering;
+	private JMenuItem mntmKillVerticalLines;
+	private JMenuItem mntmKillHorizontalLines;
+	private JMenuItem mntmKillIsolatedPoints;
+	private JMenuItem mntmRoberts;
+	private JMenuItem mntmSobel;
 
 	
 
@@ -190,7 +207,7 @@ public class MainScreen extends JFrame {
 				}
 			}
 		});
-		mntmThreshold.setMnemonic('t');if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+		mntmThreshold.setMnemonic('t');
 		mnLab.add(mntmThreshold);
 		
 		mntmThresholdrange = new JMenuItem("Threshold (range)");
@@ -314,16 +331,167 @@ public class MainScreen extends JFrame {
 		menuBar.add(mnLab_1);
 		
 		mntmSmoothing = new JMenuItem("Smoothing");
+		mntmSmoothing.setMnemonic('s');
 		mntmSmoothing.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if (firstInputBuff==null | secondInputBuff==null) throw new IllegalArgumentException("Please load both images");
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
 				APO07MaskInput.OpObject[] params = getMask(OpType.SMOOTHING);
-				APO07MaskInput newWindow = new APO07MaskInput(params);
+				APO07MaskInput newWindow = new APO07MaskInput(params, ms, firstInputBuff);
 				newWindow.setVisible(true);
 				notifyHistWindow();
 			}
 		});
 		mnLab_1.add(mntmSmoothing);
+		
+		mntmLaplace = new JMenuItem("Laplace");
+		mntmLaplace.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				APO07MaskInput.OpObject[] params = getMask(OpType.LAPLACE);
+				APO07MaskInput newWindow = new APO07MaskInput(params, ms, firstInputBuff);
+				newWindow.setVisible(true);
+				notifyHistWindow();
+			}
+		});
+		mntmLaplace.setMnemonic('l');
+		mnLab_1.add(mntmLaplace);
+		
+		mntmEdgeDetect = new JMenuItem("Edge detect");
+		mntmEdgeDetect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				APO07MaskInput.OpObject[] params = getMask(OpType.EDGE_DETECT);
+				APO07MaskInput newWindow = new APO07MaskInput(params, ms, firstInputBuff);
+				newWindow.setVisible(true);
+				notifyHistWindow();
+			}
+		});
+		mntmEdgeDetect.setMnemonic('e');
+		mnLab_1.add(mntmEdgeDetect);
+		
+		mntmRoberts = new JMenuItem("Roberts");
+		mntmRoberts.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff=sobelRoberts(firstInputBuff, OpType.ROBERTS);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLab_1.add(mntmRoberts);
+		
+		mntmSobel = new JMenuItem("Sobel");
+		mntmSobel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff=sobelRoberts(firstInputBuff, OpType.SOBEL);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnLab_1.add(mntmSobel);
+		
+		mnMedianFiltering = new JMenu("Median filtering");
+		mnMedianFiltering.setMnemonic('m');
+		mnLab_1.add(mnMedianFiltering);
+		
+		mntmx = new JMenuItem("3x3");
+		mntmx.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = medianFiltering(firstInputBuff, MaskType._3x3);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmx.setMnemonic('3');
+		mnMedianFiltering.add(mntmx);
+		
+		mntmx_1 = new JMenuItem("5x5");
+		mntmx_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = medianFiltering(firstInputBuff, MaskType._5x5);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		
+		mntmx_3 = new JMenuItem("3x5");
+		mntmx_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = medianFiltering(firstInputBuff, MaskType._3x5);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnMedianFiltering.add(mntmx_3);
+		mntmx_1.setMnemonic('5');
+		mnMedianFiltering.add(mntmx_1);
+		
+		mntmx_2 = new JMenuItem("7x7");
+		mntmx_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = medianFiltering(firstInputBuff, MaskType._7x7);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		
+		mntmNewMenuItem = new JMenuItem("5x3");
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = medianFiltering(firstInputBuff, MaskType._5x3);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mnMedianFiltering.add(mntmNewMenuItem);
+		mntmx_2.setMnemonic('7');
+		mnMedianFiltering.add(mntmx_2);
+		
+		mnLogicalFiltering = new JMenu("Logical filtering");
+		mnLogicalFiltering.setMnemonic('o');
+		mnLab_1.add(mnLogicalFiltering);
+		
+		mntmKillVerticalLines = new JMenuItem("Kill vertical lines");
+		mntmKillVerticalLines.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = logicalFiltering(firstInputBuff, Direction.VERTICAL);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmKillVerticalLines.setMnemonic('v');
+		mnLogicalFiltering.add(mntmKillVerticalLines);
+		
+		mntmKillHorizontalLines = new JMenuItem("Kill horizontal lines");
+		mntmKillHorizontalLines.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = logicalFiltering(firstInputBuff, Direction.HORIZONTAL);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmKillHorizontalLines.setMnemonic('h');
+		mnLogicalFiltering.add(mntmKillHorizontalLines);
+		
+		mntmKillIsolatedPoints = new JMenuItem("Kill isolated points");
+		mntmKillIsolatedPoints.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = logicalFiltering(firstInputBuff, Direction.ISOLATED);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmKillIsolatedPoints.setMnemonic('i');
+		mnLogicalFiltering.add(mntmKillIsolatedPoints);
 		
 		panelFirstInputPic = new PicturePanel(null);
 		panelSecondInputPic = new PicturePanel(null);
@@ -371,9 +539,17 @@ public class MainScreen extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				BufferedImage tmpImg;
 				if (firstInputBuff!=null) {
-					tmpImg = new BufferedImage(firstInputBuff.getWidth(), firstInputBuff.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-					tmpImg.getGraphics().drawImage(firstInputBuff, 0, 0, null);
-
+					tmpImg = getEmptyLinearImage(firstInputBuff.getWidth(), firstInputBuff.getHeight(), ImageType.RGB_LINEAR);
+					for (int x=0; x<firstInputBuff.getWidth(); x++) {
+						for (int y=0; y<firstInputBuff.getHeight(); y++) {
+							Color c = new Color(firstInputBuff.getRGB(x, y));
+							int red = (int)(c.getRed() * 0.299);
+							int green = (int)(c.getGreen() * 0.587);
+							int blue = (int)(c.getBlue() *0.114);
+							Color newColor = new Color(red+green+blue,red+green+blue,red+green+blue);
+							tmpImg.setRGB(x,y,newColor.getRGB());							
+						}
+					}
 					firstInputBuff=tmpImg;
 					panelFirstInputPic.setInternalImage(firstInputBuff);
 				}
@@ -460,13 +636,13 @@ public class MainScreen extends JFrame {
 		catch (IOException e) {}
 	}
 	
-	private void setOutPic(BufferedImage imgToSet) {
+	protected void setOutPic(BufferedImage imgToSet) {
 		outputBuff = imgToSet; 
 		panelOutputPic.setInternalImage(outputBuff);
 		notifyHistWindow();
 	}
 	
-	private void notifyHistWindow() {
+	protected void notifyHistWindow() {
 		histWindowSingleton.updateHistograms(firstInputBuff, secondInputBuff, outputBuff);
 	}
 	
