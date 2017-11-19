@@ -99,4 +99,12 @@ public class APO07StaticUtilityMethods {
     	else if (whichColor==Color.GREEN) return (inPixel & 0x0000ff00) >> 8;
         else return (inPixel & 0x00ff0000) >> 16;
     }
+    
+    public static float hadamardProductAndSum(float[] mask1, float[] mask2) {
+		if (mask1.length != mask2.length) throw new IllegalArgumentException("Hadamard product: unequal matrices size");
+		float result=0.0f;
+		for (int x=0; x<mask1.length; x++) result += mask1[x]*mask2[x];
+		return result;
+	}
+
 }

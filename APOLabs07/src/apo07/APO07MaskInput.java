@@ -9,6 +9,7 @@ import javax.swing.JTextField;
 import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.JRadioButton;
@@ -123,6 +124,9 @@ public class APO07MaskInput extends JDialog {
 	private JLabel lblEdgePixels;
 	private JLabel lblScalePixelOutput;
 	private JRadioButton rdbtnScaleIgn;
+	
+	private boolean twoShedsMode=false;
+	private int whichShed;
 	
 	
 	static class OpObject {
@@ -586,10 +590,18 @@ public class APO07MaskInput extends JDialog {
 		btnOk.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				float[] maskToApply = readMaskValues();
-				BufferedImage outimg = applyMask(firstInputPic, maskToApply, selectedMask, selectedSM, selectedEP);
+				ArrayList<Object> al = new ArrayList<>();
+				al.add(maskToApply); al.add(selectedMask); al.add(selectedSM); al.add(selectedEP); al.add(operations[0].opType);
+				APO07GenericOp genericOp = new APO07GenericOp(al);
+				BufferedImage outimg = marchThroughImage(firstInputPic, genericOp);
+				// BufferedImage outimg = applyMask(firstInputPic, maskToApply, selectedMask, selectedSM, selectedEP);
 				ms.outputBuff=outimg;
 				ms.setOutPic(outimg);
 				ms.notifyHistWindow();
+				if (twoShedsMode) {
+					if (whichShed==1) ms.arthurTwoShedsJackson_firstShed = maskToApply;
+					else if (whichShed==2) ms.arthurTwoShedsJackson_secondShed = maskToApply;
+				}
 				dispose();
 			}
 		});
@@ -667,6 +679,12 @@ public class APO07MaskInput extends JDialog {
 		this(operations);
 		this.firstInputPic=first;
 		this.ms=ms;
+	}
+	
+	public APO07MaskInput(OpObject[] operations, MainScreen ms, BufferedImage first, int whichShed) {
+		this(operations, ms, first);
+		this.twoShedsMode = true;
+		this.whichShed=whichShed;
 	}
 	
 	private void setScaleMethod (OpType opType, ScaleMethod sm) {
