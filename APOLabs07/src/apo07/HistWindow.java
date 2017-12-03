@@ -173,4 +173,8 @@ public class HistWindow extends JFrame {
 		if (currentSelection2==1) Hist2Panel.setNewImage(this.im2);
 		if (currentSelection2==2) Hist2Panel.setNewImage(this.imout);
 	}
+	
+	public APO07Hist getFirstPanel() {
+		return Hist1Panel;
+	}
 }

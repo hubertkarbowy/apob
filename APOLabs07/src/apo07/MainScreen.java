@@ -21,6 +21,7 @@ import java.awt.image.*;
 import static apo07.APO07StaticPointMethods.*;
 import static apo07.APO07StaticUtilityMethods.*;
 import static apo07.APO07NeighborhoodMethods.*;
+import static apo07.APO07Segment.*;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -105,6 +106,9 @@ public class MainScreen extends JFrame {
 	private JMenu mnClose;
 	private JMenuItem mntmx_6;
 	private JMenuItem mntmx_7;
+	private JMenu mnLab_3;
+	private JMenu mntmSegmentation;
+	private JMenuItem mntmIntelligentThreshold;
 	
 
 	/**
@@ -655,6 +659,25 @@ public class MainScreen extends JFrame {
 		});
 		mntmx_7.setMnemonic('8');
 		mnClose.add(mntmx_7);
+		
+		mnLab_3 = new JMenu("Lab 5");
+		mnLab_3.setMnemonic('5');
+		menuBar.add(mnLab_3);
+		
+		mntmSegmentation = new JMenu("Segmentation");
+		mntmSegmentation.setMnemonic('s');
+		mnLab_3.add(mntmSegmentation);
+		
+		mntmIntelligentThreshold = new JMenuItem("Intelligent threshold");
+		mntmIntelligentThreshold.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) { JOptionPane.showMessageDialog(null, "Please load the first picture."); return; }
+				APO07Hist hist = histWindowSingleton.getFirstPanel();
+				smartSegmentThreshold(firstInputBuff, hist);
+			}
+		});
+		mntmIntelligentThreshold.setMnemonic('t');
+		mntmSegmentation.add(mntmIntelligentThreshold);
 		
 		panelFirstInputPic = new PicturePanel(null);
 		panelSecondInputPic = new PicturePanel(null);

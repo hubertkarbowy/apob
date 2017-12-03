@@ -37,13 +37,7 @@ public class APO07StaticPointMethods {
 	}
 	
 	public static BufferedImage thresholdImg(BufferedImage im) {
-		BufferedImage ret = getEmptyLinearImage(im);
-		Raster inraster = im.getRaster();
-		WritableRaster outraster = ret.getRaster();
-		int numBands = inraster.getNumBands();
-		int[] insample = new int[numBands]; int[] outsample = new int[numBands]; 
-		
-		int threshold = 255;
+		int threshold=255;
 		try {
 			threshold = Integer.parseInt(JOptionPane.showInputDialog("Please give threshold: "));
 			if (threshold<=0 | threshold>255) throw new NumberFormatException();
@@ -52,6 +46,15 @@ public class APO07StaticPointMethods {
 			JOptionPane.showMessageDialog(null, "Please enter a value in the range 1-255");
 			return null;
 		}
+		return thresholdImg(im, threshold);
+	}
+	
+	public static BufferedImage thresholdImg(BufferedImage im, int threshold) {
+		BufferedImage ret = getEmptyLinearImage(im);
+		Raster inraster = im.getRaster();
+		WritableRaster outraster = ret.getRaster();
+		int numBands = inraster.getNumBands();
+		int[] insample = new int[numBands]; int[] outsample = new int[numBands]; 
 		
 		for (int x=0; x<im.getWidth(); x++) {
 			for (int y=0; y<im.getHeight(); y++) {

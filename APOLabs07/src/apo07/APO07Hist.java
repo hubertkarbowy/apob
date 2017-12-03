@@ -5,6 +5,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.*;
 import java.awt.image.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -28,6 +30,70 @@ public class APO07Hist extends JPanel {
     }
     boolean noZero = false;
     boolean noMax = false;
+    int[] lut = new int[256]; // lookup table
+    
+    Map<String, Integer> histDesc = new HashMap<>();
+    
+    public Map<String, Integer> describeThisHist() {
+    	// Find "twin peaks" - assume histogram has a bimodal distribution
+    	char[] copyOfLut = new char[256];
+    	lut[0]='+';
+    	for (int a=1; a<255; a++) {
+    		if (lut[a]>lut[a-1]) copyOfLut[a]='+';
+    		else copyOfLut[a]='-';
+    	}
+    	System.out.println(Arrays.toString(lut));
+    	
+    	
+    	/* for (int maxlit=0, maxlval=0,
+    			 maxrit=0, maxrval=0,
+    			 lit=0, rit=255;;lit++,rit--) {
+    			 if (lut[lit]>maxlval) {maxlit=lit; maxlval=lut[lit]; histDesc.put("peak1idx", lit); histDesc.put("peak1val", lut[lit]);}
+    			 if (lut[rit]>maxrval) {maxrit=rit; maxrval=lut[rit]; histDesc.put("peak2idx", rit); histDesc.put("peak2val", lut[rit]);}
+    			 if (maxlit==maxrit && maxlval==maxrval) break;
+    	}
+    	
+    	// Now find the minimum between the peaks
+    	for (int i=histDesc.get("peak1idx"), valleyidx=0, valleyval=255; i<histDesc.get("peak2idx"); i++) {
+    		if (lut[i]<valleyval) {valleyval=lut[i]; valleyidx=i; histDesc.put("valleyidx", i); histDesc.put("valleyval", lut[i]);}
+    	} */
+    	
+    	boolean isSmoothed=false;
+    	int windowSize=6;
+    	int sensitivity=3;
+    	
+    	while (!isSmoothed) {
+    		isSmoothed=true;
+    		int noOfPluses=0;
+    		for (int i=0; i<copyOfLut.length-windowSize-1; i++) {
+    			for (int j=0; j<windowSize; j++) if (lut[i+j+1]>lut[i+j]) noOfPluses++;
+    			if (noOfPluses>=sensitivity) {
+    				if (copyOfLut[i]=='-') {
+    					copyOfLut[i]='+';
+    					isSmoothed=false;
+    				}
+    			}
+    		}
+    	}
+    	
+    	isSmoothed=false;
+    	
+    	while (!isSmoothed) {
+    		isSmoothed=true;
+    		int noOfPluses=0;
+    		for (int i=0; i<copyOfLut.length-windowSize-1; i++) {
+    			for (int j=0; j<windowSize; j++) if (lut[i+j+1]<lut[i+j]) noOfPluses++;
+    			if (noOfPluses>=sensitivity) {
+    				if (copyOfLut[i]=='+') {
+    					copyOfLut[i]='-';
+    					isSmoothed=false;
+    				}
+    			}
+    		}
+    	}
+    	
+    	return histDesc;    	
+    }
     
     // CONSTRUCTORS
     
@@ -45,6 +111,7 @@ public class APO07Hist extends JPanel {
     {
     	this.histTitle = histTitle;
     	this.pierwszy = im;
+    	lut = getGrayscaleHist(im);
     }
     
     // USER METHODS
@@ -71,7 +138,7 @@ public class APO07Hist extends JPanel {
          Dimension size = getSize();
          Font font = new Font("Arial", Font.PLAIN, 14);
 
-         int[] lut = new int[256]; // lookup table
+         
          
          g.setFont(font);
          
