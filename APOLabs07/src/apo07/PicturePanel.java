@@ -30,7 +30,11 @@ public class PicturePanel extends JPanel {
 	public void setInternalImage(BufferedImage internalImage) {
 		Dimension internalImageDimension = new Dimension(internalImage.getWidth(), internalImage.getHeight());
 		this.internalImage = internalImage;
-		this.getGraphics().drawImage(this.internalImage, 0, 0, this);
+		if (this.internalImage==null) System.out.println("NULL");
+		else System.out.println("NOT NULL");
+		if (this.getGraphics()==null) System.out.println("GRAPHICS NULL");
+		else System.out.println("GRAPHICS NOT NULL");
+		this.getGraphics().drawImage(this.internalImage, 0, 0, null);
 		this.setSize(internalImage.getWidth(null), internalImage.getWidth(null));
 		this.setPreferredSize(internalImageDimension);
 		this.setMaximumSize(internalImageDimension);

@@ -1,11 +1,13 @@
 package apo07;
 
+import static apo07.APO07StaticUtilityMethods.getEmptyLinearImage;
 import static apo07.APO07StaticUtilityMethods.getRGBPixelValue;
 
 import java.awt.Color;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -37,6 +39,20 @@ public class APO07StaticUtilityMethods {
 		if (im==null) throw new IllegalArgumentException("Please load an image");
 		if (im.getType()==BufferedImage.TYPE_BYTE_GRAY) return getEmptyLinearImage(im.getWidth(), im.getHeight(), ImageType.GRAYSCALE);
 		else return getEmptyLinearImage(im.getWidth(), im.getHeight(), ImageType.RGB_LINEAR);
+	}
+	
+	public static BufferedImage getGrayscaleImage(BufferedImage im) {
+	BufferedImage tmpImg = getEmptyLinearImage(im.getWidth(), im.getHeight(), ImageType.RGB_LINEAR);
+	for (int x=0; x<im.getWidth(); x++) {
+		for (int y=0; y<im.getHeight(); y++) {
+			Color c = new Color(im.getRGB(x, y));
+			int red = (int)(c.getRed() * 0.299);
+			int green = (int)(c.getGreen() * 0.587);
+			int blue = (int)(c.getBlue() *0.114);
+			Color newColor = new Color(red+green+blue,red+green+blue,red+green+blue);
+			tmpImg.setRGB(x,y,newColor.getRGB());							
+		}}
+		return tmpImg;
 	}
 	
 	public static int tv(int inV) { // cuts off extreme values in saturated images
@@ -86,8 +102,13 @@ public class APO07StaticUtilityMethods {
     	int counter=0;
     	for (int alty=y-vert; alty<=y+vert; alty++) {
 			   for (int altx=x-horiz; altx<=x+horiz; altx++) {
-				   int clr= im.getRGB(altx,alty);
-				   outpixels[counter]=getRGBPixelValue(clr, whichColor);
+				   try {
+					   int clr= im.getRGB(altx,alty);
+					   outpixels[counter]=getRGBPixelValue(clr, whichColor);
+				   }
+				   catch (Exception e) {
+					   outpixels[counter]=0;
+				   }
 				   counter++;
 			   }
 	    }
@@ -106,5 +127,12 @@ public class APO07StaticUtilityMethods {
 		for (int x=0; x<mask1.length; x++) result += mask1[x]*mask2[x];
 		return result;
 	}
+    
+    public static BufferedImage deepCopy(BufferedImage bi) {
+    	 ColorModel cm = bi.getColorModel();
+    	 boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+    	 WritableRaster raster = bi.copyData(null);
+    	 return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+    	}
 
 }

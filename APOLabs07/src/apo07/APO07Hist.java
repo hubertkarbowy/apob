@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.*;
 import java.awt.image.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import static apo07.APO07StaticHistMethods.*;
+import static apo07.APO07StaticUtilityMethods.*;
 
 enum ArrowDirection {
 	UPWARD, LEFTWARD
@@ -23,9 +25,33 @@ public class APO07Hist extends JPanel {
     int offsetX=0;
     int offsetY=0;
     String histTitle = "Ta klasa rozszerza JPanel.\nTu bedzie rysowany histogram.";
+    public double mean = 0.0;  // to hell with encapsulation
+    public double variance = 0.0;
+    public double sd = 0.0;
+    public double median = 0.0;
+    public double skewness = 0.0;
+    public double kurtosis = 0.0;
+    
+    
     static class HistogramPaintException extends RuntimeException { // just in case sth is f*ckd up inside the overriden paint method
     	public HistogramPaintException(String msg) {
     		super(msg);
+    	}
+    }
+    
+    static class Paire implements Comparable {
+    	int firstel;
+    	int secondel;
+    	public Paire(int a, int b) {firstel=a; secondel=b;}
+    	
+    	@Override
+    	public int compareTo(Object xa) {
+    		Paire zz = (Paire) xa;
+    		return (this.secondel-this.firstel)-(zz.secondel-zz.firstel);
+    	}
+    	
+    	public String toString() {
+    		return "1st: "+firstel+", 2nd: "+secondel+" length: "+(secondel-firstel);
     	}
     }
     boolean noZero = false;
@@ -44,8 +70,9 @@ public class APO07Hist extends JPanel {
     	}
     	System.out.println(Arrays.toString(lut));
     	
+    	// TODELETE START
     	
-    	/* for (int maxlit=0, maxlval=0,
+    	 for (int maxlit=0, maxlval=0,
     			 maxrit=0, maxrval=0,
     			 lit=0, rit=255;;lit++,rit--) {
     			 if (lut[lit]>maxlval) {maxlit=lit; maxlval=lut[lit]; histDesc.put("peak1idx", lit); histDesc.put("peak1val", lut[lit]);}
@@ -56,11 +83,13 @@ public class APO07Hist extends JPanel {
     	// Now find the minimum between the peaks
     	for (int i=histDesc.get("peak1idx"), valleyidx=0, valleyval=255; i<histDesc.get("peak2idx"); i++) {
     		if (lut[i]<valleyval) {valleyval=lut[i]; valleyidx=i; histDesc.put("valleyidx", i); histDesc.put("valleyval", lut[i]);}
-    	} */
+    	} 
+    	
+    	// TODELETE END
     	
     	boolean isSmoothed=false;
-    	int windowSize=6;
-    	int sensitivity=3;
+    	int windowSize=4;
+    	int sensitivity=2;
     	
     	while (!isSmoothed) {
     		isSmoothed=true;
@@ -91,6 +120,27 @@ public class APO07Hist extends JPanel {
     			}
     		}
     	}
+    	
+    	ArrayList<Paire> listofpluses = new ArrayList<>();
+    	
+    	int startcounter=0; int endcounter=0; boolean counting=false;
+    	for (int i=0; i<copyOfLut.length; i++){
+    		if (copyOfLut[i]=='+') {
+    			if (counting) endcounter=i;
+    			else {startcounter=i; counting=true;}
+    		}
+    		if (copyOfLut[i]=='-') {
+    			if (counting) {
+    				endcounter=i-1;
+    				listofpluses.add(new Paire(startcounter,endcounter));
+    				counting=false;
+    			}
+    		}
+    	}
+    	
+   // 	listofpluses.forEach(x -> System.out.println(x));
+    	
+    	
     	
     	return histDesc;    	
     }
@@ -127,8 +177,49 @@ public class APO07Hist extends JPanel {
     	repaint();
     	revalidate();
     	this.pierwszy = im;
+
     	repaint();
     	revalidate();
+    	
+    	
+    	if (im==null) return;
+    	BufferedImage gs = getGrayscaleImage(im);
+    	
+    	
+    	// texture descriptors
+    	
+    	int bitmapSize=gs.getHeight()*gs.getWidth();
+    	int[] grayScaleBitmapUnfolded = new int[bitmapSize];
+    	
+    	long runningSum=0l;
+    	int counter=0;
+    	for (int y=0; y<gs.getHeight(); y++) {
+    		for (int x=0; x<gs.getWidth(); x++) {
+    			int clr = im.getRGB(x, y);
+    			runningSum += getRGBPixelValue(clr, Color.RED);
+    			grayScaleBitmapUnfolded[counter] = getRGBPixelValue(clr, Color.RED);
+    			counter++;
+    		}
+    	}
+    	mean = (runningSum/bitmapSize); // sod n-1
+    	
+    	runningSum=0l;
+    	counter=0;
+    	variance=0.0;
+    	
+    	for (int y=0; y<gs.getHeight(); y++) {
+    		for (int x=0; x<gs.getWidth(); x++) {
+    			int clr = im.getRGB(x, y);		
+    			int pxval = getRGBPixelValue(clr, Color.RED);
+    			variance += ((pxval-mean)*(pxval-mean))/(bitmapSize);
+    			kurtosis += ((pxval-mean)*(pxval-mean)*(pxval-mean)*(pxval-mean))/(bitmapSize);
+    		}
+    	}
+    	
+    	sd = Math.sqrt(variance);
+    	median = APO07NeighborhoodMethods.getMedian.apply(grayScaleBitmapUnfolded);
+    	skewness = (3*(mean-median))/sd;
+    	kurtosis = (kurtosis/(Math.pow(sd, 4))-3);
     }
     
     // METHODS THAT DO THE ACTUAL 2D DRAWING

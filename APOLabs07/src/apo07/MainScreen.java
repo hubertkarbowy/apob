@@ -22,6 +22,7 @@ import static apo07.APO07StaticPointMethods.*;
 import static apo07.APO07StaticUtilityMethods.*;
 import static apo07.APO07NeighborhoodMethods.*;
 import static apo07.APO07Segment.*;
+import static apo07.APO07Features.*;
 
 public class MainScreen extends JFrame {
 	private JMenuBar menuBar;
@@ -109,6 +110,11 @@ public class MainScreen extends JFrame {
 	private JMenu mnLab_3;
 	private JMenu mntmSegmentation;
 	private JMenuItem mntmIntelligentThreshold;
+	private JMenuItem mntmThreshold_1;
+	private JMenuItem mntmRegionGrowing;
+	private JMenuItem mntmTextureDescriptors;
+	private JMenuItem mntmImageFeatures;
+	private JMenuItem mntmTurtle;
 	
 
 	/**
@@ -676,8 +682,65 @@ public class MainScreen extends JFrame {
 				smartSegmentThreshold(firstInputBuff, hist);
 			}
 		});
-		mntmIntelligentThreshold.setMnemonic('t');
+		mntmIntelligentThreshold.setMnemonic('i');
 		mntmSegmentation.add(mntmIntelligentThreshold);
+		
+		mntmThreshold_1 = new JMenuItem("Threshold");
+		mntmThreshold_1.setMnemonic('t');
+		mntmThreshold_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				APO07SliderWindow thresholdSlider = new APO07SliderWindow(firstInputBuff, panelOutputPic);
+				
+				thresholdSlider.setVisible(true);
+			}
+		});
+		mntmSegmentation.add(mntmThreshold_1);
+		
+		mntmRegionGrowing = new JMenuItem("Region growing (assisted)");
+		mntmRegionGrowing.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				APO07SeedSelector regionGrowingWindow = new APO07SeedSelector(firstInputBuff);
+				regionGrowingWindow.setVisible(true);
+			}
+		});
+		mntmRegionGrowing.setMnemonic('g');
+		mntmSegmentation.add(mntmRegionGrowing);
+		
+		mntmTextureDescriptors = new JMenuItem("Texture descriptors");
+		mntmTextureDescriptors.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				JOptionPane.showMessageDialog(null, "Mean: " + histWindowSingleton.getFirstPanel().mean + "\n" +
+						"Variance: " + histWindowSingleton.getFirstPanel().variance + "\n" +
+						"Standard deviation: " + histWindowSingleton.getFirstPanel().sd + "\n" +
+						"Skewness: " + histWindowSingleton.getFirstPanel().skewness + "\n" +
+						"Kurtosis: " + histWindowSingleton.getFirstPanel().kurtosis + "\n"
+						);
+			}
+		});
+		
+		mntmImageFeatures = new JMenuItem("Image features");
+		mntmImageFeatures.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				imageAnalysis(firstInputBuff);
+			}
+		});
+		mntmImageFeatures.setMnemonic('f');
+		mnLab_3.add(mntmImageFeatures);
+		mnLab_3.add(mntmTextureDescriptors);
+		
+		mntmTurtle = new JMenuItem("Turtle");
+		mntmTurtle.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff = turtle(firstInputBuff);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmTurtle.setMnemonic('t');
+		mnLab_3.add(mntmTurtle);
 		
 		panelFirstInputPic = new PicturePanel(null);
 		panelSecondInputPic = new PicturePanel(null);
@@ -736,6 +799,7 @@ public class MainScreen extends JFrame {
 							tmpImg.setRGB(x,y,newColor.getRGB());							
 						}
 					}
+					// firstInputBuff=getGrayscaleImage(firstInputBuff);
 					firstInputBuff=tmpImg;
 					panelFirstInputPic.setInternalImage(firstInputBuff);
 				}
