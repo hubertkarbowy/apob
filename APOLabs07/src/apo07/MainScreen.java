@@ -115,6 +115,8 @@ public class MainScreen extends JFrame {
 	private JMenuItem mntmTextureDescriptors;
 	private JMenuItem mntmImageFeatures;
 	private JMenuItem mntmTurtle;
+	private JButton btnSwapOutAndOne;
+	private JMenuItem mntmThinning;
 	
 
 	/**
@@ -666,6 +668,18 @@ public class MainScreen extends JFrame {
 		mntmx_7.setMnemonic('8');
 		mnClose.add(mntmx_7);
 		
+		mntmThinning = new JMenuItem("Thinning");
+		mntmThinning.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
+				outputBuff=thinning(firstInputBuff);
+				panelOutputPic.setInternalImage(outputBuff);
+				notifyHistWindow();
+			}
+		});
+		mntmThinning.setMnemonic('t');
+		mnLab_2.add(mntmThinning);
+		
 		mnLab_3 = new JMenu("Lab 5");
 		mnLab_3.setMnemonic('5');
 		menuBar.add(mnLab_3);
@@ -763,7 +777,7 @@ public class MainScreen extends JFrame {
 		toolsPanel.setPreferredSize(new Dimension(10, 40));
 		toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
 		
-		lblNarzdzia = new JLabel("Narzędzia:");
+		lblNarzdzia = new JLabel("Tools:");
 		toolsPanel.add(lblNarzdzia);
 		
 		histWindowSingleton = new HistWindow(firstInputBuff, secondInputBuff, outputBuff);
@@ -821,10 +835,21 @@ public class MainScreen extends JFrame {
 		flowLayout.setAlignment(FlowLayout.RIGHT);
 		toolsPanel.add(clearPanel);
 		
-		lblCzy = new JLabel("Czyść:");
+		btnSwapOutAndOne = new JButton("Out => Pic 1");
+		btnSwapOutAndOne.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (outputBuff==null) throw new IllegalArgumentException("Please generate the output image.");
+				firstInputBuff=outputBuff;
+				panelFirstInputPic.setInternalImage(firstInputBuff);
+				notifyHistWindow();
+			}
+		});
+		clearPanel.add(btnSwapOutAndOne);
+		
+		lblCzy = new JLabel("Clear:");
 		clearPanel.add(lblCzy);
 		
-		btnClrPic1 = new JButton("Obraz 1");
+		btnClrPic1 = new JButton("Picture 1");
 		btnClrPic1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				firstInputBuff = null;
@@ -834,7 +859,7 @@ public class MainScreen extends JFrame {
 		});
 		clearPanel.add(btnClrPic1);
 		
-		btnClrPic2 = new JButton("Obraz 2");
+		btnClrPic2 = new JButton("Picture 2");
 		btnClrPic2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				secondInputBuff = null;
@@ -844,7 +869,7 @@ public class MainScreen extends JFrame {
 		});
 		clearPanel.add(btnClrPic2);
 		
-		btnClrPicOut = new JButton("Obraz out");
+		btnClrPicOut = new JButton("Picture out");
 		btnClrPicOut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				outputBuff = null;

@@ -8,6 +8,10 @@ import apo07.APO07StaticPointMethods.*;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.*;
+
 public class APO07Features extends JDialog {
 	
 	public static void imageAnalysis(BufferedImage bmp) {
@@ -134,8 +138,8 @@ public class APO07Features extends JDialog {
             for (j = 1; j < bmp.getHeight()- 1; j++)
             {
                 rtab[i][j] = getRGBPixelValue(bmp.getRGB(i, j), Color.RED);
-                rtab[i][j] = getRGBPixelValue(bmp.getRGB(i, j), Color.RED);
-                rtab[i][j] = getRGBPixelValue(bmp.getRGB(i, j), Color.RED);
+                gtab[i][j] = getRGBPixelValue(bmp.getRGB(i, j), Color.RED);
+                btab[i][j] = getRGBPixelValue(bmp.getRGB(i, j), Color.RED);
             }
         }
         int d = 0;
@@ -231,8 +235,8 @@ public class APO07Features extends JDialog {
                 {
                     //rtab[j, i] = 255;
                     rtab[j][i] = 255 / 2;
-                    gtab[j][i] = 0;
-                    btab[j][i] = 0;
+                    gtab[j][i] = 255 / 2;
+                    btab[j][i] = 255 / 2;
                 }
             }
         }
@@ -251,4 +255,109 @@ public class APO07Features extends JDialog {
         }
         return bmp;
     }
+	
+	public static Function<int[],Boolean> pattern3a1 = (neighbors -> {
+		boolean fitspattern=false;
+		if (neighbors[0]>0 | neighbors[1]>0 | neighbors[2]>0) {
+			if (neighbors[6]>0 | neighbors[7]>0 | neighbors[8]>0) {
+				if (neighbors[3]==0 & neighbors[5]==0) {
+					fitspattern=true;
+				}
+			}
+		}
+		return fitspattern;});
+	
+	public static Function<int[],Boolean> pattern3a1rot90 = (neighbors -> {
+		boolean fitspattern=false;
+		if (neighbors[0]>0 | neighbors[3]>0 | neighbors[6]>0) {
+			if (neighbors[2]>0 | neighbors[5]>0 | neighbors[8]>0) {
+				if (neighbors[1]==0 & neighbors[7]==0) {
+					fitspattern=true;
+				}
+			}
+		}
+		return fitspattern;});
+	
+	public static Function<int[],Boolean> pattern3a2 = (neighbors -> {
+		boolean fitspattern=false;
+		if (neighbors[0]>0 | neighbors[1]>0 | neighbors[2]>0 | neighbors[3]>0 | neighbors[6]>0) {
+			if (neighbors[5]==0 & neighbors[7]==0 & neighbors[8]==2) {
+					fitspattern=true;
+			}
+		}
+		return fitspattern;});
+	
+	public static Function<int[],Boolean> pattern3a2rot90 = (neighbors -> {
+		boolean fitspattern=false;
+		if (neighbors[0]>0 | neighbors[3]>0 | neighbors[6]>0 | neighbors[7]>0 | neighbors[8]>0) {
+			if (neighbors[1]==0 & neighbors[5]==0 & neighbors[2]==2) {
+					fitspattern=true;
+			}
+		}
+		return fitspattern;});
+	
+	public static Function<int[],Boolean> pattern3a2rot180 = (neighbors -> {
+		boolean fitspattern=false;
+		if (neighbors[2]>0 | neighbors[5]>0 | neighbors[8]>0 | neighbors[7]>0 | neighbors[6]>0) {
+			if (neighbors[1]==0 & neighbors[3]==0 & neighbors[0]==2) {
+					fitspattern=true;
+			}
+		}
+		return fitspattern;});
+	
+	public static Function<int[],Boolean> pattern3a2rot270 = (neighbors -> {
+		boolean fitspattern=false;
+		if (neighbors[0]>0 | neighbors[1]>0 | neighbors[2]>0 | neighbors[5]>0 | neighbors[8]>0) {
+			if (neighbors[3]==0 & neighbors[7]==0 & neighbors[6]==2) {
+					fitspattern=true;
+			}
+		}
+		return fitspattern;});
+	
+//	public static Function<int[], Boolean>[] all_patterns = new Function<int[], Boolean>[6]; 
+		
+		// {pattern3a1, pattern3a1rot90, pattern3a2, pattern3a2rot90, pattern3a2rot180, pattern3a2rot270};
+	
+	public static BufferedImage thinning(BufferedImage in) {
+		boolean remain=true;
+		BufferedImage out = deepCopy(in);
+		int width=in.getWidth();
+		int height=in.getHeight();
+		List<Function<int[], Boolean>> all_patterns = new ArrayList<>();
+		all_patterns.add(pattern3a1); all_patterns.add(pattern3a1rot90);
+		all_patterns.add(pattern3a2); all_patterns.add(pattern3a2rot90); all_patterns.add(pattern3a2rot180); all_patterns.add(pattern3a2rot270);
+		
+		
+		while (remain) {
+			remain=false;
+			boolean skel=false;
+			int[] jtab = new int[] {0,2,4};
+			for (int jpx : jtab) { // Step 4
+				for (int y=2; y<height-2; y++) { // Step 5a
+					for (int x=2; x<width-2; x++) { // Step 5b - to hell with edge pixels
+						 int ppix=out.getRGB(x, y);
+						 int p=getRGBPixelValue(ppix, Color.RED);
+						 
+						 int[] neighbors = getNeighboringPixels(out, x, y, 1, 1, Color.RED);
+						 int j=getRGBPixelValue(neighbors[jpx], Color.RED);
+						 if (p==254 && j==0) {  // step 6
+							 skel=false;
+							 for (Function<int[], Boolean> pattern : all_patterns) { // Step 9
+								 if (pattern.apply(neighbors)) {skel=true; break;}
+							 }
+							 if (skel==true) out.setRGB(x, y, new Color(2,2,2).getRGB()); // Step 10
+							 else {out.setRGB(x, y, new Color(3,3,3).getRGB()); remain=true;}
+							 }
+						 } // TODO: Shape generator with parameters
+					}
+				for (int y=2; y<height-2; y++) { // Step 11
+					for (int x=2; x<width-2; x++) { 
+						if (getRGBPixelValue(out.getRGB(x, y), Color.RED)==3) out.setRGB(x,y,0);
+						System.out.println("pval2=" + getRGBPixelValue(out.getRGB(x, y), Color.RED));
+					}
+				}
+				}
+			}
+		return out;
+	}
 }
