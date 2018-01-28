@@ -93,7 +93,8 @@ public class APO07StaticPointMethods {
 			for (int y=0; y<im.getHeight(); y++) {
 				// int rgba = im.getRGB(x, y);
 				inraster.getPixel(x, y, insample);
-				for (int band=0; band<numBands; band++) outsample[band] = insample[band]>thresholdMin && insample[band]<=thresholdMax ? insample[band] : 0;
+				// for (int band=0; band<numBands; band++) outsample[band] = insample[band]>thresholdMin && insample[band]<=thresholdMax ? insample[band] : 0;
+				for (int band=0; band<numBands; band++) outsample[band] = insample[band]>thresholdMin && insample[band]<=thresholdMax ? 255 : 0;
 				outraster.setPixel(x,y, outsample);
 			}
 		}
@@ -138,44 +139,36 @@ public class APO07StaticPointMethods {
 	}
 	
 	public static BufferedImage downsample(BufferedImage im, int numLevels) {
-		BufferedImage ret = getEmptyLinearImage(im);
-		Raster inraster = im.getRaster();
-		WritableRaster outraster = ret.getRaster();
-		int numBands = im.getRaster().getNumBands();
-		int[] insample = new int[numBands];
-		int[] outsample = new int[numBands];
-		
-		float step = (float)256/(numLevels);
+		BufferedImage ret = deepCopy(im);
+		float step = (float)255/(numLevels);
+		int pixVal=0;
 		
 		UnaryOperator<Integer> fitIntoBands = (p) -> {float temp=Math.round(p/step); return Math.round(temp*step);};
 		for (int x=0; x<im.getWidth(); x++) {
 			for (int y=0; y<im.getHeight(); y++) {
-				   inraster.getPixel(x, y, insample);
-				   for (int band=0; band<numBands; band++) outsample[band]=fitIntoBands.apply(insample[band]);
-				   outraster.setPixel(x, y, outsample);
+				   pixVal = getRGBPixelValue(im.getRGB(x, y), Color.RED);
+				   System.out.println(fitIntoBands.apply(pixVal));
+				   ret.setRGB(x, y, new Color(fitIntoBands.apply(pixVal), fitIntoBands.apply(pixVal), fitIntoBands.apply(pixVal)).getRGB());
 			}
 		}
+		
 		return ret;
 	}
 	
 	public static BufferedImage arithmeticOps(BufferedImage im, BufferedImage im2, BiFunction<Integer, Integer, Integer> aluOp) {
 		BufferedImage newim1 = getMaximalOfTwo(im, im2);
-		BufferedImage newim2 = getMaximalOfTwo(im, im2);
-		BufferedImage ret = getMaximalOfTwo(im, im2);
-		
-		WritableRaster inraster = newim1.getRaster(); inraster.setRect(im.getRaster());
-		WritableRaster inraster2 = newim2.getRaster(); inraster2.setRect(im2.getRaster());
-		WritableRaster outraster = ret.getRaster();
-		
-		int numBands = im.getRaster().getNumBands();
-		
-		for (int b=0; b<numBands; b++) {
-			int[] insample1 = inraster.getSamples(0, 0, newim1.getWidth()-1, newim1.getHeight()-1, b, (int[]) null);
-			int[] insample2 = inraster2.getSamples(0, 0, newim2.getWidth()-1, newim2.getHeight()-1, b, (int[]) null);
-			int[] outsample = outraster.getSamples(0, 0, ret.getWidth()-1, ret.getHeight()-1, b, (int[]) null);
-			for (int i=0; i<insample1.length; i++) outsample[i]=tv(aluOp.apply(insample1[i], insample2[i]));
-			outraster.setSamples(0, 0, ret.getWidth()-1, ret.getHeight()-1, b, outsample);
+		BufferedImage newim2 = getMaximalOfTwo(im, im2);	
+		BufferedImage ret = deepCopy(im);
+		for (int x=0; x<im.getWidth(); x++) {
+			for (int y=0; y<im.getHeight(); y++) {
+				   int pixVal1 = getRGBPixelValue(im.getRGB(x, y), Color.RED);
+				   int pixVal2 = getRGBPixelValue(im2.getRGB(x, y), Color.RED);
+				   int outColor = aluOp.apply(pixVal1, pixVal2);
+				   outColor = outColor<0 ? 0 : outColor>255 ? 255 : outColor;
+				   ret.setRGB(x, y, new Color(outColor, outColor, outColor).getRGB());
+			}
 		}
+		
 		return ret;
 	}
 }

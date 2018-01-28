@@ -126,7 +126,7 @@ public class MainScreen extends JFrame {
 		setExtendedState(Frame.MAXIMIZED_BOTH);
 		setPreferredSize(new Dimension(900, 600));
 		setTitle("Algorytmy Przetwarzania Obrazów 07");
-		setMinimumSize(new Dimension(900, 600));
+		setMinimumSize(new Dimension(900, 300));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// setBounds(100, 100, 591, 322);
 		JPanel MainScreenMainPanel = new JPanel();
