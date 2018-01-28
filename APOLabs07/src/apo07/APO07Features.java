@@ -9,6 +9,7 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.*;
 
@@ -231,12 +232,11 @@ public class APO07Features extends JDialog {
             for (j = 0; j < bmp.getWidth(); j++)
             {
                 //if (wynik[bmp.Width * i + j] == 255)
-                if (wynik[bmp.getWidth() * i + j] == 255- 1)
+                if (wynik[bmp.getWidth() * i + j] > 250)
                 {
-                    //rtab[j, i] = 255;
                     rtab[j][i] = 255 / 2;
-                    gtab[j][i] = 255 / 2;
-                    btab[j][i] = 255 / 2;
+                    gtab[j][i] = 0;
+                    btab[j][i] = 0;
                 }
             }
         }
@@ -247,7 +247,7 @@ public class APO07Features extends JDialog {
             {
                 //bmp[i, j] = Color.FromArgb(rtab[i, j], gtab[i, j], btab[i, j]);
             	Color outColor = new Color(rtab[i][j], gtab[i][j], btab[i][j]);
-				bmp.setRGB(i, j, outColor.getRGB());
+				if (rtab[i][j] == 255/2) bmp.setRGB(i, j, Color.RED.getRGB());
 				
                 
             	// bmp[i, j] = (byte)rtab[i, j];
@@ -318,20 +318,21 @@ public class APO07Features extends JDialog {
 		
 		// {pattern3a1, pattern3a1rot90, pattern3a2, pattern3a2rot90, pattern3a2rot180, pattern3a2rot270};
 	
-	public static BufferedImage thinning(BufferedImage in) {
-		boolean remain=true;
+	public static BufferedImage skeleton(BufferedImage in) {
+		
 		BufferedImage out = deepCopy(in);
 		int width=in.getWidth();
 		int height=in.getHeight();
 		List<Function<int[], Boolean>> all_patterns = new ArrayList<>();
-		all_patterns.add(pattern3a1); all_patterns.add(pattern3a1rot90);
+		all_patterns.add(pattern3a1);
+		all_patterns.add(pattern3a1rot90);
 		all_patterns.add(pattern3a2); all_patterns.add(pattern3a2rot90); all_patterns.add(pattern3a2rot180); all_patterns.add(pattern3a2rot270);
 		
-		
-		while (remain) {
-			remain=false;
+		boolean remain=true; // Step 1
+		while (remain) { // Step 2
+			remain=false; // Step 3
 			boolean skel=false;
-			int[] jtab = new int[] {0,2,4};
+			int[] jtab = new int[] {0,2,4,6};
 			for (int jpx : jtab) { // Step 4
 				for (int y=2; y<height-2; y++) { // Step 5a
 					for (int x=2; x<width-2; x++) { // Step 5b - to hell with edge pixels
@@ -340,24 +341,38 @@ public class APO07Features extends JDialog {
 						 
 						 int[] neighbors = getNeighboringPixels(out, x, y, 1, 1, Color.RED);
 						 int j=getRGBPixelValue(neighbors[jpx], Color.RED);
-						 if (p==254 && j==0) {  // step 6
+					//	 System.out.println("Kolor ="+j);
+						 if ((p==255 || p==245 || p==1) && neighbors[jpx]==0) {  // step 6
 							 skel=false;
 							 for (Function<int[], Boolean> pattern : all_patterns) { // Step 9
-								 if (pattern.apply(neighbors)) {skel=true; break;}
+								 if (pattern.apply(neighbors)) {
+									 skel=true;
+									 System.out.println("Element szkieletowy w x="+x+", y="+y);
+									 break;}
 							 }
 							 if (skel==true) out.setRGB(x, y, new Color(2,2,2).getRGB()); // Step 10
 							 else {out.setRGB(x, y, new Color(3,3,3).getRGB()); remain=true;}
 							 }
 						 } // TODO: Shape generator with parameters
 					}
+				
 				for (int y=2; y<height-2; y++) { // Step 11
 					for (int x=2; x<width-2; x++) { 
 						if (getRGBPixelValue(out.getRGB(x, y), Color.RED)==3) out.setRGB(x,y,0);
-						System.out.println("pval2=" + getRGBPixelValue(out.getRGB(x, y), Color.RED));
+						if (y==28 && x==28) {
+							int[] otoczenie_in = getNeighboringPixels(in, x, y, 1, 1, Color.RED);
+						//	System.out.println("Otoczenie: " + Arrays.toString(otoczenie_in));
+						//	System.out.println("pval2=" + getRGBPixelValue(out.getRGB(x, y), Color.RED));
+						}
 					}
 				}
-				}
 			}
+		}
+		for (int y=2; y<height-2; y++) { // Step 11
+			for (int x=2; x<width-2; x++) { 
+			   if (getRGBPixelValue(out.getRGB(x, y), Color.RED)==2) out.setRGB(x,y,Color.WHITE.getRGB());
+			}
+		}
 		return out;
 	}
 }

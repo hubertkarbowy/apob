@@ -183,43 +183,43 @@ public class APO07Hist extends JPanel {
     	
     	
     	if (im==null) return;
-    	BufferedImage gs = getGrayscaleImage(im);
-    	
-    	
-    	// texture descriptors
-    	
-    	int bitmapSize=gs.getHeight()*gs.getWidth();
-    	int[] grayScaleBitmapUnfolded = new int[bitmapSize];
-    	
-    	long runningSum=0l;
-    	int counter=0;
-    	for (int y=0; y<gs.getHeight(); y++) {
-    		for (int x=0; x<gs.getWidth(); x++) {
-    			int clr = im.getRGB(x, y);
-    			runningSum += getRGBPixelValue(clr, Color.RED);
-    			grayScaleBitmapUnfolded[counter] = getRGBPixelValue(clr, Color.RED);
-    			counter++;
-    		}
-    	}
-    	mean = (runningSum/bitmapSize); // sod n-1
-    	
-    	runningSum=0l;
-    	counter=0;
-    	variance=0.0;
-    	
-    	for (int y=0; y<gs.getHeight(); y++) {
-    		for (int x=0; x<gs.getWidth(); x++) {
-    			int clr = im.getRGB(x, y);		
-    			int pxval = getRGBPixelValue(clr, Color.RED);
-    			variance += ((pxval-mean)*(pxval-mean))/(bitmapSize);
-    			kurtosis += ((pxval-mean)*(pxval-mean)*(pxval-mean)*(pxval-mean))/(bitmapSize);
-    		}
-    	}
-    	
-    	sd = Math.sqrt(variance);
-    	median = APO07NeighborhoodMethods.getMedian.apply(grayScaleBitmapUnfolded);
-    	skewness = (3*(mean-median))/sd;
-    	kurtosis = (kurtosis/(Math.pow(sd, 4))-3);
+BufferedImage gs = getGrayscaleImage(pierwszy);
+     	
+     	
+     	// texture descriptors
+     	
+     	int bitmapSize=gs.getHeight()*gs.getWidth();
+     	int[] grayScaleBitmapUnfolded = new int[bitmapSize];
+     	
+     	long runningSum=0l;
+     	int counter=0;
+     	for (int y=0; y<gs.getHeight(); y++) {
+     		for (int x=0; x<gs.getWidth(); x++) {
+     			int clr = pierwszy.getRGB(x, y);
+     			runningSum += getRGBPixelValue(clr, Color.RED);
+     			grayScaleBitmapUnfolded[counter] = getRGBPixelValue(clr, Color.RED);
+     			counter++;
+     		}
+     	}
+     	mean = (runningSum/bitmapSize); // sod n-1
+     	
+     	runningSum=0l;
+     	counter=0;
+     	variance=0.0;
+     	
+     	for (int y=0; y<gs.getHeight(); y++) {
+     		for (int x=0; x<gs.getWidth(); x++) {
+     			int clr = pierwszy.getRGB(x, y);		
+     			int pxval = getRGBPixelValue(clr, Color.RED);
+     			variance += ((pxval-mean)*(pxval-mean))/(bitmapSize);
+     			kurtosis += ((pxval-mean)*(pxval-mean)*(pxval-mean)*(pxval-mean))/(bitmapSize);
+     		}
+     	}
+     	
+     	sd = Math.sqrt(variance);
+     	median = APO07NeighborhoodMethods.getMedian.apply(grayScaleBitmapUnfolded);
+     	skewness = (3*(mean-median))/sd;
+     	kurtosis = (kurtosis/(Math.pow(sd, 4))-3);
     }
     
     // METHODS THAT DO THE ACTUAL 2D DRAWING
@@ -228,8 +228,6 @@ public class APO07Hist extends JPanel {
     	 Graphics2D g2 = (Graphics2D) g;
          Dimension size = getSize();
          Font font = new Font("Arial", Font.PLAIN, 14);
-
-         
          
          g.setFont(font);
          
@@ -273,8 +271,6 @@ public class APO07Hist extends JPanel {
         	 int maxBarHeight = yAxis_endY-yAxis_startY-1;
         	 paintBars(g, lut, xAxis_startX+1, xAxis_startY-1, maxBarHeight);
          }
-         
-         
     }
     private void drawArrow(Graphics g, int startX, int startY, int endX, int endY, ArrowDirection ad) {
     	Graphics2D g2 = (Graphics2D) g;

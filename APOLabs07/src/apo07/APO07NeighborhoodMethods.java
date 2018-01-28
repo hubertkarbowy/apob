@@ -87,7 +87,8 @@ public class APO07NeighborhoodMethods {
 			if (sorted.length % 2 == 1) return sorted[(sorted.length-1)/2];
 			else {
 				int first = sorted[(sorted.length/2)-1]; int second = sorted[(sorted.length/2)];
-				return first/second;
+				if(second!=0) return first/second;
+				else return 0;
 			}
 		};
 		

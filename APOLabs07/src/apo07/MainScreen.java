@@ -139,16 +139,16 @@ public class MainScreen extends JFrame {
 		menuBar = new JMenuBar();
 		menuBar.setMaximumSize(new Dimension(500, 30));
 		
-		mnPlik = new JMenu("Plik");
+		mnPlik = new JMenu("File");
 		mnPlik.setMnemonic('p');
 		menuBar.add(mnPlik);
 		
-		JMenuItem mnExit = new JMenuItem("Wyjdź");
+		JMenuItem mnExit = new JMenuItem("Exit");
 		mnExit.addActionListener((ActionEvent event) -> {
             System.exit(0);
         });
 		
-		mnOpenPic1 = new JMenuItem("Otwórz obraz 1");
+		mnOpenPic1 = new JMenuItem("Load picture 1");
 		mnOpenPic1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, InputEvent.CTRL_MASK));
 		mnOpenPic1.addActionListener((ActionEvent event) -> {
 			loadPicIntoPanel(panelFirstInputPic, PicturePanelAsEnum.INPUT_1);
@@ -158,7 +158,7 @@ public class MainScreen extends JFrame {
 		mnOpenPic1.setMnemonic('1');
 		mnPlik.add(mnOpenPic1);
 		
-		mnOpenPic2 = new JMenuItem("Otwórz obraz 2");
+		mnOpenPic2 = new JMenuItem("Load picture 2");
 		mnOpenPic2.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_2, InputEvent.CTRL_MASK));
 		mnOpenPic2.setMnemonic('2');
 		mnOpenPic2.addActionListener((ActionEvent event) -> {
@@ -672,7 +672,7 @@ public class MainScreen extends JFrame {
 		mntmThinning.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (firstInputBuff==null) throw new IllegalArgumentException("Please load the first image");
-				outputBuff=thinning(firstInputBuff);
+				outputBuff=skeleton(firstInputBuff);
 				panelOutputPic.setInternalImage(outputBuff);
 				notifyHistWindow();
 			}
@@ -783,7 +783,7 @@ public class MainScreen extends JFrame {
 		histWindowSingleton = new HistWindow(firstInputBuff, secondInputBuff, outputBuff);
 		histWindowSingleton.setVisible(false);
 		
-		histButton = new JButton("Hist");
+		histButton = new JButton("Histogram");
 		histButton.setMnemonic('h');
 		histButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

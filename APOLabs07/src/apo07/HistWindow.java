@@ -34,6 +34,8 @@ public class HistWindow extends JFrame {
 	private BufferedImage imout;
 	private JCheckBox chckbxBez0;
 	private JCheckBox chckbxBez1;
+	private JLabel lblParams;
+	private JLabel lblParams_1;
 	
 	
 	public HistWindow() {
@@ -62,7 +64,7 @@ public class HistWindow extends JFrame {
 		leftHistPanel = new JPanel();
 		lowerPanel.add(leftHistPanel);
 		
-		leftHistLabel = new JLabel("Lewy histogram:");
+		leftHistLabel = new JLabel("Left histogram:");
 		leftHistPanel.add(leftHistLabel);
 		
 		leftHistChooser = new JComboBox();
@@ -85,10 +87,13 @@ public class HistWindow extends JFrame {
 		leftHistChooser.setSelectedIndex(0);
 		leftHistPanel.add(leftHistChooser);
 		
+		lblParams = new JLabel("params1");
+		leftHistPanel.add(lblParams);
+		
 		rightHistPanel = new JPanel();
 		lowerPanel.add(rightHistPanel);
 		
-		rightHistLabel = new JLabel("Prawy histogram:");
+		rightHistLabel = new JLabel("Right histogram:");
 		rightHistPanel.add(rightHistLabel);
 		
 		rightHistChooser = new JComboBox();
@@ -111,7 +116,7 @@ public class HistWindow extends JFrame {
 		rightHistChooser.setSelectedIndex(2); 
 		rightHistPanel.add(rightHistChooser);
 		
-		chckbxBez0 = new JCheckBox("Bez 0");
+		chckbxBez0 = new JCheckBox("w/o 0");
 		chckbxBez0.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (chckbxBez0.isSelected()) Hist2Panel.toggleExtremes((byte)0, true);
@@ -122,7 +127,7 @@ public class HistWindow extends JFrame {
 		});
 		rightHistPanel.add(chckbxBez0);
 		
-		chckbxBez1 = new JCheckBox("Bez 1");
+		chckbxBez1 = new JCheckBox("w/o 1");
 		chckbxBez1.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (chckbxBez1.isSelected()) Hist2Panel.toggleExtremes((byte)1, true);
@@ -132,6 +137,9 @@ public class HistWindow extends JFrame {
 			}
 		});
 		rightHistPanel.add(chckbxBez1);
+		
+		lblParams_1 = new JLabel("params2");
+		rightHistPanel.add(lblParams_1);
 		
 		this.im1=null; this.im2=null; this.imout=null;
 		setLocationRelativeTo(null);
@@ -166,12 +174,14 @@ public class HistWindow extends JFrame {
 		
 		int currentSelection1 = leftHistChooser.getSelectedIndex();
 		int currentSelection2 = rightHistChooser.getSelectedIndex();
-		if (currentSelection1==0) Hist1Panel.setNewImage(this.im1);
-		if (currentSelection1==1) Hist1Panel.setNewImage(this.im2);
-		if (currentSelection1==2) Hist1Panel.setNewImage(this.imout);
-		if (currentSelection2==0) Hist2Panel.setNewImage(this.im1);
-		if (currentSelection2==1) Hist2Panel.setNewImage(this.im2);
-		if (currentSelection2==2) Hist2Panel.setNewImage(this.imout);
+		if (currentSelection1==0) {Hist1Panel.setNewImage(this.im1); lblParams.setText("μ=,"+Hist1Panel.mean + "σ="+Hist1Panel.sd);}
+		if (currentSelection1==1) {Hist1Panel.setNewImage(this.im2); lblParams.setText("μ=,"+Hist1Panel.mean + "σ="+Hist1Panel.sd);}
+		if (currentSelection1==2) {Hist1Panel.setNewImage(this.imout); lblParams.setText("μ=,"+Hist1Panel.mean + "σ="+Hist1Panel.sd);}
+		if (currentSelection2==0) {Hist2Panel.setNewImage(this.im1); lblParams_1.setText("μ=,"+Hist2Panel.mean + "σ="+Hist2Panel.sd);}
+		if (currentSelection2==1) {Hist2Panel.setNewImage(this.im2); lblParams_1.setText("μ=,"+Hist2Panel.mean + "σ="+Hist2Panel.sd);}
+		if (currentSelection2==2) {Hist2Panel.setNewImage(this.imout); lblParams_1.setText("μ=,"+Hist2Panel.mean + "σ="+Hist2Panel.sd);}
+		
+		
 	}
 	
 	public APO07Hist getFirstPanel() {
